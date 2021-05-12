@@ -2,15 +2,43 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 
+	hd "ede1_data_porting/headers"
+
 	"cloud.google.com/go/bigquery"
+	"github.com/google/uuid"
 )
+
+//GenerateJsonFile generate json file and insert to bigquery
+func GenerateJsonFile(invoicRrecords interface{}, tableName string) (err error) {
+	file, err := json.Marshal(invoicRrecords)
+	if err != nil {
+		panic(err)
+	}
+	Filename := hd.Filename + uuid.New().String() + ".json"
+
+	err = ioutil.WriteFile(Filename, file, 0644)
+	if err != nil {
+		log.Printf("Error while creating Json file: %v", err)
+		return err
+	}
+
+	err = ImporttoBigquery(hd.ProjectID, hd.DatasetID, tableName, Filename)
+	if err != nil {
+		log.Printf("Error while importing to bigquery: %v", err)
+		return err
+	}
+
+	return nil
+}
 
 //ImportCSVFromFile import data to big query
 func ImporttoBigquery(projectID, datasetID, tableID, filename string) (err error) {
-	log.Println("File import to bigquery start")
+	log.Printf("File import to bigquery start, TableName := %v", tableID)
 	ctx := context.Background()
 	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
@@ -43,6 +71,6 @@ func ImporttoBigquery(projectID, datasetID, tableID, filename string) (err error
 		return err
 	}
 	os.Remove(filename)
-	log.Println("File import to bigquery end")
+	log.Printf("File import to bigquery end, TableName := %v", tableID)
 	return nil
 }

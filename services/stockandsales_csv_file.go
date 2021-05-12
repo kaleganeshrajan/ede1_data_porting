@@ -1,22 +1,22 @@
 package services
 
 import (
+	"bufio"
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
-	"bufio"
-	"encoding/json"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"strings"
-
-	"github.com/google/uuid"
+	"time"
 
 	cr "github.com/brkelkar/common_utils/configreader"
 )
 
+//StockandSalesParser parse stock and sales with PTR and without PTR
 func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
+	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 	Init()
 	r := g.GcsClient.GetReader()
@@ -29,6 +29,15 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	var records md.Record
 	cMap := make(map[string]md.Company)
 	PTRLength := 0
+
+	records.FilePath = g.FilePath
+	records.FileType = hd.FileType
+	if strings.Contains(g.BucketName, "MTD") {
+		records.Duration = hd.DurationMTD
+	} else {
+		records.Duration = hd.DurationMonthly
+	}
+	SS_count := 0
 
 	for {
 		line, err := reader.ReadString('\n')
@@ -45,12 +54,14 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 
 		switch lineSlice[0] {
 		case "H":
+			fmt.Println("H in")
 			records.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist_Code])
 			FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
 			records.FromDate = FromDate.Format("2006-01-02")
 			ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
 			records.ToDate = ToDate.Format("2006-01-02")
 		case "T":
+			SS_count = SS_count + 1
 			var tempItem md.Item
 			tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[hd.Csv_Uniform_Pdt_Code])
 			tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Csv_Stkt_Product_Code])
@@ -58,6 +69,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			tempItem.Pack = strings.TrimSpace(lineSlice[hd.Csv_Pack])
 			if len(lineSlice) >= 16 {
 				tempItem.PTR = strings.TrimSpace(lineSlice[hd.Csv_PTR])
+				records.FileType = hd.FileTypePTR
 				PTRLength = 1
 			}
 			tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.Csv_Opening_Qty+PTRLength])
@@ -80,27 +92,28 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		}
 	}
 
-	for _, val := range cMap {
-		records.Companies = append(records.Companies, val)
+	var testinter interface{}
+	if len(cMap) > 0 {
+		for _, val := range cMap {
+			records.Companies = append(records.Companies, val)
+		}
+		testinter = records
+		err = ut.GenerateJsonFile(testinter, TableId[1])
+		if err != nil {
+			return err
+		}
 	}
 
-	file, err := json.Marshal(records)
+	FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
+		0, int64(time.Since(startTime)/1000000), TableId[4])
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	Filename := hd.Filename + uuid.New().String() + ".json"
+	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
+	log.Printf("File parsing done: %v", g.FilePath)
 
-	err = ioutil.WriteFile(Filename, file, 0644)
-	if err != nil {
-		log.Printf("Error while creating Json file: %v", err)
-	}
-
-	err = ut.ImporttoBigquery(hd.ProjectID, hd.DatasetID, TableId[1], Filename)
-	if err != nil {
-		log.Printf("Error while importing to bigquery: %v", err)
-	}
-
-	log.Printf("File parse done: %v", g.FilePath)
+	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
+	g.LogFileDetails(true)
 	return err
 }

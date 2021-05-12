@@ -103,6 +103,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
+		msg.Ack()
 		err := sr.StockandSalesParser(g, cfg)
 		if err == nil {
 			msg.Ack()

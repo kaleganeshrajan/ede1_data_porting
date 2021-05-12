@@ -1,33 +1,19 @@
 package services
 
 import (
+	"bufio"
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
-	"bufio"
-	"encoding/json"
 	"io"
-	"io/ioutil"
 	"log"
 	"strings"
 	"time"
 
 	cr "github.com/brkelkar/common_utils/configreader"
-	"github.com/google/uuid"
 )
 
-var (
-	TableId map[int]string
-)
-
-func Init() {
-	TableId = make(map[int]string)
-
-	TableId[1] = "stock_and_sales"
-	TableId[2] = "stock_and_sales_H2"
-	TableId[3] = "stock_and_sales_H3"
-}
-
+//StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
 func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
@@ -43,6 +29,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	var stockandsalesRecords md.Record
 	var batchRecords md.RecordBatch
 	var invoicRrecords md.RecordInvoice
+
 	cMap := make(map[string]md.Company)
 	cMapInvoice := make(map[string]md.CompanyInvoice)
 
@@ -56,9 +43,18 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	batchRecords.FileType = hd.FileType
 	invoicRrecords.FileType = hd.FileType
 
-	stockandsalesRecords.Duration = g.BucketName
-	batchRecords.Duration = g.BucketName
-	invoicRrecords.Duration = g.BucketName
+	if strings.Contains(g.BucketName, "MTD") {
+		invoicRrecords.Duration = hd.DurationMTD
+		batchRecords.Duration = hd.DurationMTD
+		stockandsalesRecords.Duration = hd.DurationMTD
+	} else {
+		invoicRrecords.Duration = hd.DurationMonthly
+		batchRecords.Duration = hd.DurationMonthly
+		stockandsalesRecords.Duration = hd.DurationMonthly
+	}
+
+	SS_count := 0
+	INV_Count := 0
 
 	for {
 		line, err := reader.ReadString('\n')
@@ -87,6 +83,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			invoicRrecords.ToDate = stockandsalesRecords.ToDate
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 		case "T1":
+			SS_count = SS_count + 1
 			var tempItem md.Item
 			tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Item_code])
 			tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Item_name])
@@ -121,6 +118,12 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 				tempItem.PurchaseVal = strings.TrimSpace(lineSlice[hd.PurchaseVal+PTSLength])
 				tempItem.SalesVal = strings.TrimSpace(lineSlice[hd.SalesVal+PTSLength])
 				tempItem.CloseVal = strings.TrimSpace(lineSlice[hd.CloseVal+PTSLength])
+			} else {
+				tempItem.InstaSales = "0"
+				tempItem.OpenVal = "0"
+				tempItem.PurchaseVal = "0"
+				tempItem.SalesVal = "0"
+				tempItem.CloseVal = "0"
 			}
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
@@ -147,6 +150,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			tempItem.Closing_Qty = strings.TrimSpace(lineSlice[hd.H2_Closing_Stock])
 			batchRecords.Batches = append(batchRecords.Batches, tempItem)
 		case "T3":
+			INV_Count = INV_Count + 1
 			InvoiceDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
 			if err != nil {
 				InvoiceDate = &time.Time{}
@@ -175,16 +179,18 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			stockandsalesRecords.Companies = append(stockandsalesRecords.Companies, val)
 		}
 		testinter = stockandsalesRecords
-		err = GenerateJsonFile(testinter, 1)
+		err = ut.GenerateJsonFile(testinter, TableId[1])
 		if err != nil {
 			return err
 		}
 	}
 
-	testinter = batchRecords
-	err = GenerateJsonFile(testinter, 2)
-	if err != nil {
-		return err
+	if len(batchRecords.Batches) > 1 {
+		testinter = batchRecords
+		err = ut.GenerateJsonFile(testinter, TableId[2])
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(cMapInvoice) > 0 {
@@ -192,10 +198,16 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			invoicRrecords.Companies = append(invoicRrecords.Companies, val)
 		}
 		testinter = invoicRrecords
-		err = GenerateJsonFile(testinter, 3)
+		err = ut.GenerateJsonFile(testinter, TableId[3])
 		if err != nil {
 			return err
 		}
+	}
+
+	err = FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, len(batchRecords.Batches),
+		INV_Count, int64(time.Since(startTime)/1000000), TableId[4])
+	if err != nil {
+		return err
 	}
 
 	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
@@ -204,26 +216,4 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 	g.LogFileDetails(true)
 	return err
-}
-
-func GenerateJsonFile(invoicRrecords interface{}, filetype int) (err error) {
-	file, err := json.Marshal(invoicRrecords)
-	if err != nil {
-		panic(err)
-	}
-	Filename := hd.Filename + uuid.New().String() + ".json"
-
-	err = ioutil.WriteFile(Filename, file, 0644)
-	if err != nil {
-		log.Printf("Error while creating Json file: %v", err)
-		return err
-	}
-
-	err = ut.ImporttoBigquery(hd.ProjectID, hd.DatasetID, TableId[filetype], Filename)
-	if err != nil {
-		log.Printf("Error while importing to bigquery: %v", err)
-		return err
-	}
-
-	return nil
 }

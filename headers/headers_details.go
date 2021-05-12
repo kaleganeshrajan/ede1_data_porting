@@ -62,6 +62,8 @@ const (
 	FileType        string = "Without_PTS"
 	FileTypewithPTR string = "With_PTR"
 	FileTypePTR     string = "Without_PTR"
+	DurationMTD     string = "MTD"
+	DurationMonthly string = "Monthly"
 )
 
 const (
