@@ -52,6 +52,8 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		line = strings.TrimSpace(line)
 		lineSlice := strings.Split(line, ",")
 
+		fmt.Printf("%q\n", lineSlice[0])
+
 		switch lineSlice[0] {
 		case "H":
 			fmt.Println("H in")
