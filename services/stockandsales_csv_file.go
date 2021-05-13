@@ -9,7 +9,6 @@ import (
 	"log"
 	"strings"
 	"time"
-	"unicode"
 
 	cr "github.com/brkelkar/common_utils/configreader"
 )
@@ -52,12 +51,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		line = strings.TrimSpace(line)
 		lineSlice := strings.Split(line, ",")
 
-		lineSlice[0] = strings.Map(func(r rune) rune {
-			if unicode.IsGraphic(r) {
-				return r
-			}
-			return -1
-		}, lineSlice[0])
+		lineSlice[0] = ut.Removespacialcharactor(lineSlice[0])
 
 		switch lineSlice[0] {
 		case "H":
