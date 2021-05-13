@@ -106,7 +106,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		msg.Ack()
 		err := sr.StockandSalesParser(g, cfg)
 		if err == nil {
-			msg.Ack()
+			//msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
 		err := sr.StockandSalesCSVParser(g, cfg)

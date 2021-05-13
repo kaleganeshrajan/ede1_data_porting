@@ -5,11 +5,11 @@ import (
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
-	"fmt"
 	"io"
 	"log"
 	"strings"
 	"time"
+	"unicode"
 
 	cr "github.com/brkelkar/common_utils/configreader"
 )
@@ -52,11 +52,15 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		line = strings.TrimSpace(line)
 		lineSlice := strings.Split(line, ",")
 
-		fmt.Printf("%q\n", lineSlice[0])
+		lineSlice[0] = strings.Map(func(r rune) rune {
+			if unicode.IsGraphic(r) {
+				return r
+			}
+			return -1
+		}, lineSlice[0])
 
 		switch lineSlice[0] {
 		case "H":
-			fmt.Println("H in")
 			records.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist_Code])
 			FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
 			records.FromDate = FromDate.Format("2006-01-02")
