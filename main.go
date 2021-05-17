@@ -116,7 +116,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 			msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD"):
-		cmd := exec.Command("main.py -p gs://balatestawacs/SampleFiles/AIOCD0923/AIOCD0923_02_2021_511b9d2d-76c3-4e4e-a2a4-35840fc612ce.xls --dpath D:/RDP/pqr.csv")
+		cmd := exec.Command("main.py")
 		out, err := cmd.Output()
 
 		if err != nil {
