@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -106,12 +108,22 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		msg.Ack()
 		err := sr.StockandSalesParser(g, cfg)
 		if err == nil {
-			//msg.Ack()
+			msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
 		err := sr.StockandSalesCSVParser(g, cfg)
 		if err == nil {
 			msg.Ack()
 		}
+	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD"):
+		cmd := exec.Command("main.py -p gs://balatestawacs/SampleFiles/AIOCD0923/AIOCD0923_02_2021_511b9d2d-76c3-4e4e-a2a4-35840fc612ce.xls --dpath D:/RDP/pqr.csv")
+		out, err := cmd.Output()
+
+		if err != nil {
+			println(err.Error())
+			return
+		}
+
+		fmt.Println(string(out))
 	}
 }
