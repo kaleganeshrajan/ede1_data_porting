@@ -104,8 +104,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	mu.Unlock()
 
 	switch {
-	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
-		msg.Ack()
+	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):		
 		err := sr.StockandSalesParser(g, cfg)
 		if err == nil {
 			msg.Ack()
