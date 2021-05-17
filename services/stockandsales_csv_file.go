@@ -104,7 +104,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		}
 	}
 
-	FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
+	fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
 		0, int64(time.Since(startTime)/1000000), TableId[4])
 	if err != nil {
 		return err
