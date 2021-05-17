@@ -27,7 +27,6 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 
 	var records md.Record
 	cMap := make(map[string]md.Company)
-	PTRLength := 0
 
 	records.FilePath = g.FilePath
 	records.FileType = hd.FileType
@@ -62,33 +61,19 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			records.ToDate = ToDate.Format("2006-01-02")
 		case "T":
 			SS_count = SS_count + 1
-			var tempItem md.Item
-			tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[hd.Csv_Uniform_Pdt_Code])
-			tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Csv_Stkt_Product_Code])
-			tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Csv_Product_Name])
-			tempItem.Pack = strings.TrimSpace(lineSlice[hd.Csv_Pack])
-			if len(lineSlice) >= 16 {
-				tempItem.PTR = strings.TrimSpace(lineSlice[hd.Csv_PTR])
-				records.FileType = hd.FileTypePTR
-				PTRLength = 1
-			}
-			tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.Csv_Opening_Qty+PTRLength])
-			tempItem.Purchases_Reciepts = strings.TrimSpace(lineSlice[hd.Csv_Receipts_Qty+PTRLength])
-			tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.Csv_Sales_Qty+PTRLength])
-			tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.Csv_Sales_Ret_Qty+PTRLength])
-			tempItem.Purchase_return = strings.TrimSpace(lineSlice[hd.Csv_Purch_Ret_Qty+PTRLength])
-			tempItem.Adjustments = strings.TrimSpace(lineSlice[hd.Csv_Adjustments_Qty+PTRLength])
-			tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.Csv_ClosingQty+PTRLength])
+			tempItem := AssignItem(lineSlice)
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
-				var tempCompany md.Company
-				tempCompany.CompanyCode = strings.TrimSpace(lineSlice[hd.Company_code])
-				tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.Company_name])
+				tempCompany := AssignCompanySS(lineSlice)
 				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
 			}
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
+
+			if len(lineSlice) >= 16 {
+				records.FileType = hd.FileTypePTR
+			}
 		}
 	}
 
@@ -116,4 +101,24 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 	g.LogFileDetails(true)
 	return err
+}
+
+func AssignItem(lineSlice []string) (tempItem md.Item) {
+	PTRLength := 0
+	tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[hd.Csv_Uniform_Pdt_Code])
+	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Csv_Stkt_Product_Code])
+	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Csv_Product_Name])
+	tempItem.Pack = strings.TrimSpace(lineSlice[hd.Csv_Pack])
+	if len(lineSlice) >= 16 {
+		tempItem.PTR = strings.TrimSpace(lineSlice[hd.Csv_PTR])
+		PTRLength = 1
+	}
+	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.Csv_Opening_Qty+PTRLength])
+	tempItem.Purchases_Reciepts = strings.TrimSpace(lineSlice[hd.Csv_Receipts_Qty+PTRLength])
+	tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.Csv_Sales_Qty+PTRLength])
+	tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.Csv_Sales_Ret_Qty+PTRLength])
+	tempItem.Purchase_return = strings.TrimSpace(lineSlice[hd.Csv_Purch_Ret_Qty+PTRLength])
+	tempItem.Adjustments = strings.TrimSpace(lineSlice[hd.Csv_Adjustments_Qty+PTRLength])
+	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.Csv_ClosingQty+PTRLength])
+	return tempItem
 }
