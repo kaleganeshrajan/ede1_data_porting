@@ -17,7 +17,7 @@ import (
 func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
-	Init()
+
 	r := g.GcsClient.GetReader()
 	reader := bufio.NewReader(r)
 	if reader == nil {
@@ -55,10 +55,10 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		switch lineSlice[0] {
 		case "H":
 			records.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist_Code])
-			FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
-			records.FromDate = FromDate.Format("2006-01-02")
-			ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
-			records.ToDate = ToDate.Format("2006-01-02")
+			cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
+			records.FromDate = cm.FromDate.Format("2006-01-02")
+			cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
+			records.ToDate = cm.ToDate.Format("2006-01-02")
 		case "T":
 			SS_count = SS_count + 1
 			tempItem := AssignItem(lineSlice)
@@ -83,14 +83,14 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			records.Companies = append(records.Companies, val)
 		}
 		testinter = records
-		err = ut.GenerateJsonFile(testinter, TableId[1])
+		err = ut.GenerateJsonFile(testinter, hd.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
 	}
 
 	fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
-		0, int64(time.Since(startTime)/1000000), TableId[4])
+		0, int64(time.Since(startTime)/1000000), hd.File_details)
 	if err != nil {
 		return err
 	}

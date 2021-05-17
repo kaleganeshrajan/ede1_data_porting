@@ -85,3 +85,10 @@ const (
 )
 
 const PTS, Csv_PTR = 8, 8
+
+const (
+	Stock_and_Sales="stock_and_sales"
+	Batch_details="batch_details"
+	Invoice_details="invoice_details"
+	File_details="file_details"
+)

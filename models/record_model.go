@@ -29,3 +29,4 @@ type RecordBatch struct {
 	Duration        string      `json:"Duration"`
 	Batches         []ItemBatch `json:"Batches"`
 }
+

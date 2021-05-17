@@ -18,24 +18,20 @@ var (
 	stockandsalesRecords md.Record
 	batchRecords         md.RecordBatch
 	invoicRrecords       md.RecordInvoice
+	cm                   md.Common
 )
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
 func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)
-	Init()
+	log.Printf("Starting file parse: %v", g.FilePath)	
 
 	r := g.GcsClient.GetReader()
 	reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
-	}
-
-	var stockandsalesRecords md.Record
-	var batchRecords md.RecordBatch
-	var invoicRrecords md.RecordInvoice
+	}	
 
 	cMap := make(map[string]md.Company)
 	cMapInvoice := make(map[string]md.CompanyInvoice)
@@ -62,12 +58,12 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist_Code])
 			batchRecords.DistributorCode = stockandsalesRecords.DistributorCode
 			invoicRrecords.DistributorCode = stockandsalesRecords.DistributorCode
-			FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
-			stockandsalesRecords.FromDate = FromDate.Format("2006-01-02")
+			cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
+			stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 			batchRecords.FromDate = stockandsalesRecords.FromDate
 			invoicRrecords.FromDate = stockandsalesRecords.FromDate
-			ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
-			stockandsalesRecords.ToDate = ToDate.Format("2006-01-02")
+			cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
+			stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 			batchRecords.ToDate = stockandsalesRecords.ToDate
 			invoicRrecords.ToDate = stockandsalesRecords.ToDate
 			g.DistributorCode = stockandsalesRecords.DistributorCode
@@ -112,7 +108,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			stockandsalesRecords.Companies = append(stockandsalesRecords.Companies, val)
 		}
 		testinter = stockandsalesRecords
-		err = ut.GenerateJsonFile(testinter, TableId[1])
+		err = ut.GenerateJsonFile(testinter, hd.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
@@ -120,7 +116,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 
 	if len(batchRecords.Batches) > 1 {
 		testinter = batchRecords
-		err = ut.GenerateJsonFile(testinter, TableId[2])
+		err = ut.GenerateJsonFile(testinter, hd.Batch_details)
 		if err != nil {
 			return err
 		}
@@ -131,14 +127,14 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			invoicRrecords.Companies = append(invoicRrecords.Companies, val)
 		}
 		testinter = invoicRrecords
-		err = ut.GenerateJsonFile(testinter, TableId[3])
+		err = ut.GenerateJsonFile(testinter, hd.Invoice_details)
 		if err != nil {
 			return err
 		}
 	}
 
 	fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, len(batchRecords.Batches),
-		INV_Count, int64(time.Since(startTime)/1000000), TableId[4])
+		INV_Count, int64(time.Since(startTime)/1000000), hd.File_details)
 
 	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
 	log.Printf("File parsing done: %v", g.FilePath)
