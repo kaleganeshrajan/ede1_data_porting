@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -130,7 +131,14 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			err := sr.StockandSalesSale(g, cfg)
+			r := g.GcsClient.GetReader()
+			reader := bufio.NewReader(r)
+			err := sr.StockandSalesSale(g, cfg,reader)
+			if err == nil {
+				msg.Ack()
+			}
+		} else {
+			err := sr.StockandSalesDits(g, cfg)
 			if err == nil {
 				msg.Ack()
 			}

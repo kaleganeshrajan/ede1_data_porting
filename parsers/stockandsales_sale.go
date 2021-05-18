@@ -14,12 +14,12 @@ import (
 )
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesSale(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
+	// r := g.GcsClient.GetReader()
+	// reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
