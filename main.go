@@ -133,7 +133,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			r := g.GcsClient.GetReader()
 			reader := bufio.NewReader(r)
-			err := sr.StockandSalesSale(g, cfg,reader)
+			err := sr.StockandSalesSale(g, cfg, reader)
 			if err == nil {
 				msg.Ack()
 			}

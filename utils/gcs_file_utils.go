@@ -41,7 +41,8 @@ func (g *GcsFile) HandleGCSEvent(ctx context.Context, e models.GCSEvent) *GcsFil
 	g.FilePath = e.Bucket + "/" + e.Name
 	g.FileName = e.Name
 	g.BucketName = e.Bucket
-	g.FileKey = strings.Split(e.Name, "/")[7]
+	fileName := strings.Split(e.Name, "/")
+	g.FileKey = fileName[len(fileName)-2]
 	g.LastUpdateTime = e.Updated
 
 	g.ProcessingTime = e.Updated.Format("2006-01-02")
