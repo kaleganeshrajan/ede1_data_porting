@@ -22,11 +22,13 @@ type Item struct {
 	Adjustments         string `json:"Adjustments"`
 	Closing_Stock       string `json:"ClosingStock"`
 	UniformPdtCode      string `json:"UniformPdtCode"`
-	InstaSales      string `json:"InstaSales"`
-	OpenVal      string `json:"OpenVal"`
-	PurchaseVal      string `json:"PurchaseVal"`
-	SalesVal      string `json:"SalesVal"`
-	CloseVal      string `json:"CloseVal"`
+	InstaSales          string `json:"InstaSales"`
+	OpenVal             string `json:"OpenVal"`
+	PurchaseVal         string `json:"PurchaseVal"`
+	SalesVal            string `json:"SalesVal"`
+	CloseVal            string `json:"CloseVal"`
+	PurchaseFree        string `json:"PurchaseFree"`
+	SalesFree           string `json:"SalesFree"`
 }
 
 type ItemBatch struct {

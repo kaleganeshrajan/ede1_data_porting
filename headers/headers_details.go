@@ -112,3 +112,20 @@ const (
 	FromDate
 	ToDate
 )
+
+const (
+	Companyname int = iota
+	ProductName
+	OpeingUnits
+	PurchaseUnits
+	PurchaseFree
+	PurchaseReturn
+	SalesUnits
+	SalesFree
+	SalesReturn
+	ClosingUnits
+	Stockistcode
+	Fromdate
+	Todate
+	StandardPTR
+)

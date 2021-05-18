@@ -86,6 +86,10 @@ func main() {
 }
 
 func worker(ctx context.Context, msg pubsub.Message) {
+	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
+	// 	msg.Ack()
+	// }
+
 	var bucketDetails BukectStruct
 	json.Unmarshal(msg.Data, &bucketDetails)
 	var e models.GCSEvent
@@ -125,9 +129,11 @@ func worker(ctx context.Context, msg pubsub.Message) {
 
 		fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
-		err := sr.StockandSalesV5Parser(g, cfg)
-		if err == nil {
-			msg.Ack()
+		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
+			err := sr.StockandSalesSale(g, cfg)
+			if err == nil {
+				msg.Ack()
+			}
 		}
 	}
 }

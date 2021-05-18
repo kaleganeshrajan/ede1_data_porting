@@ -7,6 +7,7 @@ type Record struct {
 	FromDate        string    `json:"FromDate"`
 	FileType        string    `json:"FileType"`
 	Duration        string    `json:"Duration"`
+	Key             string    `json:"Key"`
 	Companies       []Company `json:"Companies"`
 }
 
