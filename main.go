@@ -2,17 +2,17 @@ package main
 
 import (
 	"context"
+	"ede1_data_porting/models"
+	sr "ede1_data_porting/parsers"
+	"ede1_data_porting/utils"
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
-
-	"ede1_data_porting/models"
-	sr "ede1_data_porting/parsers"
-	"ede1_data_porting/utils"
 
 	"cloud.google.com/go/pubsub"
 	cr "github.com/brkelkar/common_utils/configreader"
@@ -114,16 +114,24 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		if err == nil {
 			msg.Ack()
 		}
-	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
-		cmd := exec.Command("main.py")
-		out, err := cmd.Output()
+	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"):
+		script := "./file_convert/ede_xls_dbf_to_csv.py"
+		fileName := "gs://" + g.FilePath
+		temp := strings.Split(g.FilePath, "/")
 
-		if err != nil {
-			println(err.Error())
-			return
-		}
+		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
+		fmt.Println(script, "-p", fileName, "-d", outPutFile)
+		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		cmd.Run()
 
-		fmt.Println(string(out))
+		// if err != nil {
+		// 	println(err.Error())
+		// 	return
+		// }
+
+		// fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		err := sr.StockandSalesV5Parser(g, cfg)
 		if err == nil {
