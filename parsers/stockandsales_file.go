@@ -1,4 +1,4 @@
-package services
+package parsers
 
 import (
 	"bufio"
@@ -36,7 +36,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	cMap := make(map[string]md.Company)
 	cMapInvoice := make(map[string]md.CompanyInvoice)
 
-	AssignHeader(g)
+	assignHeader(g)
 
 	SS_count := 0
 	INV_Count := 0
@@ -70,10 +70,10 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 		case "T1":
 			SS_count = SS_count + 1
 
-			tempItem := AssignItemH1(lineSlice)
+			tempItem := assignItemH1(lineSlice)
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
-				tempCompany := AssignCompanySS(lineSlice)
+				tempCompany := assignCompanySS(lineSlice)
 				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
 			}
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
@@ -86,14 +86,14 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 				invoicRrecords.FileType = hd.FileTypePTS
 			}
 		case "T2":
-			tempItem := AssignItemH2(lineSlice)
+			tempItem := assignItemH2(lineSlice)
 			batchRecords.Batches = append(batchRecords.Batches, tempItem)
 		case "T3":
 			INV_Count = INV_Count + 1
-			tempItem := AssignItemH3(lineSlice)
+			tempItem := assignItemH3(lineSlice)
 
 			if _, ok := cMapInvoice[lineSlice[hd.Company_code]]; !ok {
-				tempCompany := AssignCompanyinvocie(lineSlice)
+				tempCompany := assignCompanyinvocie(lineSlice)
 				cMapInvoice[lineSlice[hd.Company_code]] = tempCompany
 			}
 			t := cMapInvoice[lineSlice[hd.Company_code]]
@@ -144,7 +144,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	return err
 }
 
-func AssignHeader(g ut.GcsFile) {
+func assignHeader(g ut.GcsFile) {
 	stockandsalesRecords.FilePath = g.FilePath
 	batchRecords.FilePath = g.FilePath
 	invoicRrecords.FilePath = g.FilePath
@@ -164,7 +164,7 @@ func AssignHeader(g ut.GcsFile) {
 	}
 }
 
-func AssignItemH1(lineSlice []string) (tempItem md.Item) {
+func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	PTSLength := 0
 	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Item_code])
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Item_name])
@@ -200,7 +200,7 @@ func AssignItemH1(lineSlice []string) (tempItem md.Item) {
 	return tempItem
 }
 
-func AssignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
+func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	ExpiryDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
 	if err != nil {
 		ExpiryDate = &time.Time{}
@@ -216,7 +216,7 @@ func AssignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	return tempItem
 }
 
-func AssignItemH3(lineSlice []string) (tempItem md.Invoice) {
+func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	InvoiceDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
 	if err != nil {
 		InvoiceDate = &time.Time{}
@@ -229,13 +229,13 @@ func AssignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	return tempItem
 }
 
-func AssignCompanySS(lineSlice []string) (tempCompany md.Company) {
+func assignCompanySS(lineSlice []string) (tempCompany md.Company) {
 	tempCompany.CompanyCode = strings.TrimSpace(lineSlice[hd.Company_code])
 	tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.Company_name])
 	return tempCompany
 }
 
-func AssignCompanyinvocie(lineSlice []string) (tempCompany md.CompanyInvoice) {
+func assignCompanyinvocie(lineSlice []string) (tempCompany md.CompanyInvoice) {
 	tempCompany.CompanyCode = lineSlice[hd.Company_code]
 	tempCompany.CompanyName = lineSlice[hd.Company_name]
 	return tempCompany

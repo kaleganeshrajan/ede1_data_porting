@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"ede1_data_porting/models"
-	sr "ede1_data_porting/services"
+	sr "ede1_data_porting/parsers"
 	"ede1_data_porting/utils"
 
 	"cloud.google.com/go/pubsub"
@@ -104,7 +104,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	mu.Unlock()
 
 	switch {
-	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):		
+	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		err := sr.StockandSalesParser(g, cfg)
 		if err == nil {
 			msg.Ack()
@@ -114,7 +114,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		if err == nil {
 			msg.Ack()
 		}
-	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD"):
+	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		cmd := exec.Command("main.py")
 		out, err := cmd.Output()
 
@@ -124,5 +124,10 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		}
 
 		fmt.Println(string(out))
+	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
+		err := sr.StockandSalesV5Parser(g, cfg)
+		if err == nil {
+			msg.Ack()
+		}
 	}
 }

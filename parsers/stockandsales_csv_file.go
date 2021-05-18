@@ -1,4 +1,4 @@
-package services
+package parsers
 
 import (
 	"bufio"
@@ -64,7 +64,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 			tempItem := AssignItem(lineSlice)
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
-				tempCompany := AssignCompanySS(lineSlice)
+				tempCompany := assignCompanySS(lineSlice)
 				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
 			}
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
