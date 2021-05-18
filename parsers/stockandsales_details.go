@@ -5,6 +5,7 @@ import (
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -30,7 +31,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 	SS_count := 0
 	flag := 1
-
+	seperator := ";"
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err == io.EOF {
@@ -41,7 +42,11 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 		}
 
 		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, ";")
+		lineSlice := strings.Split(line, seperator)
+		if len(lineSlice) <= 3 {
+			seperator = "|"
+			lineSlice = strings.Split(line, seperator)
+		}
 
 		if flag == 1 {
 			flag = 0
@@ -86,6 +91,9 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 }
 
 func assignStandardItem(lineSlice []string) (tempItem md.Item) {
+	if len(lineSlice) < 10 {
+		fmt.Println(lineSlice)
+	}
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")

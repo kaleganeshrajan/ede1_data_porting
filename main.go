@@ -81,6 +81,7 @@ func main() {
 		go func(ctx context.Context, msg pubsub.Message) {
 			time.Sleep(5 * time.Millisecond)
 			worker(ctx, msg)
+			msg.Ack()
 			<-guard
 		}(ctx, *msg)
 	}
@@ -119,7 +120,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		if err == nil {
 			msg.Ack()
 		}
-	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"):
+	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
@@ -127,27 +128,49 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
 		fmt.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		cmd.Run()
 
-		// if err != nil {
-		// 	println(err.Error())
-		// 	return
-		// }
+		cmd.Run()
+		fd, err := os.Open(outPutFile)
+		if err != nil {
+			println(err.Error())
+			return
+		}
+
+		reader := bufio.NewReader(fd)
+
+		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
+			err := sr.StockandSalesSale(g, cfg, reader)
+			if err != nil {
+				return
+			}
+		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
+
+			err := sr.StockandSalesDetails(g, cfg, reader)
+			if err != nil {
+				return
+			}
+		} else {
+			err := sr.StockandSalesDits(g, cfg, reader)
+			if err != nil {
+				return
+			}
+		}
+		os.Remove(outPutFile)
+		msg.Ack()
 
 		// fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
+
+		r := g.GcsClient.GetReader()
+		reader := bufio.NewReader(r)
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			r := g.GcsClient.GetReader()
-			reader := bufio.NewReader(r)
 			err := sr.StockandSalesSale(g, cfg, reader)
-			if err == nil {
+			if err != nil {
 				msg.Ack()
 			}
 		} else {
-			err := sr.StockandSalesDits(g, cfg)
-			if err == nil {
+			err := sr.StockandSalesDits(g, cfg, reader)
+			if err != nil {
 				msg.Ack()
 			}
 		}

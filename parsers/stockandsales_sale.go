@@ -5,6 +5,7 @@ import (
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -18,8 +19,6 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	// r := g.GcsClient.GetReader()
-	// reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -31,7 +30,7 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 
 	SS_count := 0
 	flag := 1
-
+	seperator := "|"
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err == io.EOF {
@@ -42,7 +41,16 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		}
 
 		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, ";")
+		lineSlice := strings.Split(line, seperator)
+		if len(lineSlice) <= 3 {
+			seperator = "|"
+			lineSlice = strings.Split(line, seperator)
+		}
+
+		if len(lineSlice) < 10 {
+			fmt.Println(line)
+			fmt.Println(lineSlice)
+		}
 
 		if flag == 1 {
 			flag = 0

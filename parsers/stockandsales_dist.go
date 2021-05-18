@@ -13,12 +13,10 @@ import (
 	cr "github.com/brkelkar/common_utils/configreader"
 )
 
-func StockandSalesDits(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -26,7 +24,7 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config) (err error) {
 	var recordsDist md.RecordDist
 
 	flag := 1
-
+	seperator := ";"
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err == io.EOF {
@@ -37,8 +35,11 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config) (err error) {
 		}
 
 		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, ";")
-
+		lineSlice := strings.Split(line, seperator)
+		if len(lineSlice) <= 3 {
+			seperator = "|"
+			lineSlice = strings.Split(line, seperator)
+		}
 		if flag == 1 {
 			flag = 0
 		} else {
