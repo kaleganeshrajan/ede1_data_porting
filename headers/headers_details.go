@@ -87,10 +87,11 @@ const (
 const PTS, Csv_PTR = 8, 8
 
 const (
-	Stock_and_Sales = "stock_and_sales"
-	Batch_details   = "batch_details"
-	Invoice_details = "invoice_details"
-	File_details    = "file_details"
+	Stock_and_Sales      = "stock_and_sales"
+	Batch_details        = "batch_details"
+	Invoice_details      = "invoice_details"
+	File_details         = "file_details"
+	Stock_and_Sales_Dist = "stock_and_sale_dist"
 )
 
 const (
@@ -111,4 +112,30 @@ const (
 	StockistCode
 	FromDate
 	ToDate
+)
+
+const (
+	Companyname int = iota
+	ProductName
+	OpeingUnits
+	PurchaseUnits
+	PurchaseFree
+	PurchaseReturn
+	SalesUnits
+	SalesFree
+	SalesReturn
+	ClosingUnits
+	Stockistcode
+	Fromdate
+	Todate
+	StandardPTR
+)
+
+const (
+	DistName int = iota
+	CityName
+	StateName
+	DFromDate
+	DToDate
+	Stockist
 )

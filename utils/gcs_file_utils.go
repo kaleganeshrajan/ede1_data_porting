@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"ede1_data_porting/models"
 	"context"
+	"ede1_data_porting/models"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -25,6 +26,7 @@ type GcsFile struct {
 	Source          string
 	GcsClient       *GcsBucketClient
 	TimeDiffrence   int64
+	FileKey         string
 }
 
 //HandleGCSEvent  parse file name and set all required attributes for the file
@@ -39,9 +41,10 @@ func (g *GcsFile) HandleGCSEvent(ctx context.Context, e models.GCSEvent) *GcsFil
 	g.FilePath = e.Bucket + "/" + e.Name
 	g.FileName = e.Name
 	g.BucketName = e.Bucket
-
+	fileName := strings.Split(e.Name, "/")
+	g.FileKey = fileName[len(fileName)-2]
 	g.LastUpdateTime = e.Updated
-	
+
 	g.ProcessingTime = e.Updated.Format("2006-01-02")
 	return g
 }
@@ -53,7 +56,7 @@ func (g *GcsFile) LogFileDetails(status bool) {
 		zap.Int("FileSize", g.FileSize),
 		zap.String("FileType", g.FileType),
 		zap.String("ProcessingTime", g.ProcessingTime),
-		zap.Bool("Proting_status", status),		
+		zap.Bool("Proting_status", status),
 		zap.Int64("TimeDiffrence", g.TimeDiffrence),
 		zap.Int("record_count", g.Records))
 }

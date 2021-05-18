@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"ede1_data_porting/models"
 	sr "ede1_data_porting/parsers"
@@ -86,6 +87,10 @@ func main() {
 }
 
 func worker(ctx context.Context, msg pubsub.Message) {
+	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
+	// 	msg.Ack()
+	// }
+
 	var bucketDetails BukectStruct
 	json.Unmarshal(msg.Data, &bucketDetails)
 	var e models.GCSEvent
@@ -133,9 +138,18 @@ func worker(ctx context.Context, msg pubsub.Message) {
 
 		// fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
-		err := sr.StockandSalesV5Parser(g, cfg)
-		if err == nil {
-			msg.Ack()
+		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
+			r := g.GcsClient.GetReader()
+			reader := bufio.NewReader(r)
+			err := sr.StockandSalesSale(g, cfg, reader)
+			if err == nil {
+				msg.Ack()
+			}
+		} else {
+			err := sr.StockandSalesDits(g, cfg)
+			if err == nil {
+				msg.Ack()
+			}
 		}
 	}
 }

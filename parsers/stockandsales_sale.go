@@ -14,12 +14,12 @@ import (
 )
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesV5Parser(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
+	// r := g.GcsClient.GetReader()
+	// reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -90,6 +90,7 @@ func StockandSalesV5Parser(g ut.GcsFile, cfg cr.Config) (err error) {
 }
 
 func assignHeaders(g ut.GcsFile) {
+	stockandsalesRecords.Key = g.FileKey
 	stockandsalesRecords.FilePath = g.FilePath
 	stockandsalesRecords.FileType = hd.FileTypewithPTR
 	if strings.Contains(g.BucketName, "MTD") {
@@ -116,6 +117,8 @@ func assignItem(lineSlice []string) (tempItem md.Item) {
 	tempItem.Discount_percentage = strings.TrimSpace(lineSlice[hd.DiscountPer])
 	tempItem.Discount_amount = strings.TrimSpace(lineSlice[hd.DiscountAmount])
 	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.ClosingStock])
+	tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.SretQty])
+	tempItem.Sale_tax = strings.TrimSpace(lineSlice[hd.StaxPerc])
 
 	return tempItem
 }

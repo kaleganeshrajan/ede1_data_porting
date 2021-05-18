@@ -13,12 +13,12 @@ import (
 	cr "github.com/brkelkar/common_utils/configreader"
 )
 
-func StockandSalesStandard(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
+	// r := g.GcsClient.GetReader()
+	// reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -48,20 +48,18 @@ func StockandSalesStandard(g ut.GcsFile, cfg cr.Config) (err error) {
 		} else {
 			SS_count = SS_count + 1
 
-			tempItem := assignItem(lineSlice)
+			tempItem := assignStandardItem(lineSlice)
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
 				var tempCompany md.Company
-				tempCompany.CompanyCode = strings.TrimSpace(lineSlice[hd.CompanyCode])
-				tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.CompanyName])
+				tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.Companyname])
 				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
 			}
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 		}
-
 	}
 
 	var testinter interface{}
@@ -76,8 +74,7 @@ func StockandSalesStandard(g ut.GcsFile, cfg cr.Config) (err error) {
 		}
 	}
 
-	fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, 0,
-		0, int64(time.Since(startTime)/1000000), hd.File_details)
+	fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, 0, 0, int64(time.Since(startTime)/1000000), hd.File_details)
 
 	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
 	log.Printf("File parsing done: %v", g.FilePath)
@@ -88,33 +85,23 @@ func StockandSalesStandard(g ut.GcsFile, cfg cr.Config) (err error) {
 	return err
 }
 
-func assignStandardHeader(g ut.GcsFile) {
-	stockandsalesRecords.FilePath = g.FilePath
-	stockandsalesRecords.FileType = hd.FileTypewithPTR
-	if strings.Contains(g.BucketName, "MTD") {
-		stockandsalesRecords.Duration = hd.DurationMTD
-	} else {
-		stockandsalesRecords.Duration = hd.DurationMonthly
-	}
-}
-
 func assignStandardItem(lineSlice []string) (tempItem md.Item) {
-	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.StockistCode])
-	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.FromDate]))
+	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
+	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
-	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.ToDate]))
+	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
 	stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 
-	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.ItemCode])
-	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ItemName])
-	tempItem.Pack = strings.TrimSpace(lineSlice[hd.PackSize])
-	tempItem.PTR = strings.TrimSpace(lineSlice[hd.SprPTR])
-	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.OpeningStock])
-	tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.SalesQty])
-	tempItem.Bonus_qty = strings.TrimSpace(lineSlice[hd.BonusQty])
-	tempItem.Discount_percentage = strings.TrimSpace(lineSlice[hd.DiscountPer])
-	tempItem.Discount_amount = strings.TrimSpace(lineSlice[hd.DiscountAmount])
-	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.ClosingStock])
+	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
+	tempItem.PTR = strings.TrimSpace(lineSlice[hd.StandardPTR])
+	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.OpeingUnits])
+	tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.SalesUnits])
+	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.ClosingUnits])
+	tempItem.PurchaseVal = strings.TrimSpace(lineSlice[hd.PurchaseUnits])
+	tempItem.Purchase_return = strings.TrimSpace(lineSlice[hd.PurchaseReturn])
+	tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.SalesReturn])
+	tempItem.PurchaseFree = strings.TrimSpace(lineSlice[hd.PurchaseFree])
+	tempItem.SalesFree = strings.TrimSpace(lineSlice[hd.SalesFree])
 
 	return tempItem
 }
