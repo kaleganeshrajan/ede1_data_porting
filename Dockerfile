@@ -7,9 +7,8 @@ WORKDIR $GOPATH/src/github.com/brkelkar/ede1_data_porting
 COPY . .
 
 # Install the package
-RUN go build .
+RUN go build -tags=jsoniter .
 
-ENV GOOGLE_APPLICATION_CREDENTIALS=awacs-dev-b1917786452d.json
 
 RUN  apt-get update -y
 RUN  apt-get --assume-yes install -y python3
