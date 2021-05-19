@@ -14,12 +14,10 @@ import (
 )
 
 //StockandSalesParser parse stock and sales with PTR and without PTR
-func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -27,9 +25,12 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 
 	var records md.Record
 	cMap := make(map[string]md.Company)
+	var fd ut.FileDetail
+	var cm md.Common
 
 	records.FilePath = g.FilePath
 	records.FileType = hd.FileType
+	records.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		records.Duration = hd.DurationMTD
 	} else {

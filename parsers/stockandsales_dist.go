@@ -22,6 +22,8 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		return
 	}
 	var recordsDist md.RecordDist
+	recordsDist.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	var fd ut.FileDetail
 
 	flag := 1
 	seperator := ";"
@@ -43,6 +45,10 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		if flag == 1 {
 			flag = 0
 		} else {
+			if len(lineSlice) < 6 {
+				log.Println("File is not correct format")
+				return nil
+			}
 			recordsDist := assignItems(lineSlice)
 			recordsDist.Key = strings.TrimSpace(g.FileKey)
 			if strings.Contains(g.BucketName, "MTD") {
@@ -72,6 +78,7 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 }
 
 func assignItems(lineSlice []string) (recordsDist md.RecordDist) {
+	var cm md.Common
 	recordsDist.CityName = strings.TrimSpace(lineSlice[hd.CityName])
 	recordsDist.DistName = strings.TrimSpace(lineSlice[hd.DistName])
 	recordsDist.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist])

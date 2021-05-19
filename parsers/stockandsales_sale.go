@@ -24,9 +24,12 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		return
 	}
 
+	var fd ut.FileDetail
+	var stockandsalesRecords md.Record
+
 	cMap := make(map[string]md.Company)
 
-	assignHeaders(g)
+	assignHeaders(g, &stockandsalesRecords)
 
 	SS_count := 0
 	flag := 1
@@ -55,9 +58,13 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		if flag == 1 {
 			flag = 0
 		} else {
+			if len(lineSlice) < 17 {
+				log.Println("File is not correct format")
+				return nil
+			}
 			SS_count = SS_count + 1
 
-			tempItem := assignItem(lineSlice)
+			tempItem := assignItem(lineSlice,&stockandsalesRecords)
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
@@ -97,10 +104,11 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 	return err
 }
 
-func assignHeaders(g ut.GcsFile) {
+func assignHeaders(g ut.GcsFile, stockandsalesRecords *md.Record) {
 	stockandsalesRecords.Key = g.FileKey
 	stockandsalesRecords.FilePath = g.FilePath
 	stockandsalesRecords.FileType = hd.FileTypewithPTR
+	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		stockandsalesRecords.Duration = hd.DurationMTD
 	} else {
@@ -108,7 +116,8 @@ func assignHeaders(g ut.GcsFile) {
 	}
 }
 
-func assignItem(lineSlice []string) (tempItem md.Item) {
+func assignItem(lineSlice []string, stockandsalesRecords *md.Record) (tempItem md.Item) {
+	var cm md.Common
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.StockistCode])
 	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.FromDate]))
 	stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")

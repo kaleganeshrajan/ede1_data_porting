@@ -81,7 +81,6 @@ func main() {
 		go func(ctx context.Context, msg pubsub.Message) {
 			time.Sleep(5 * time.Millisecond)
 			worker(ctx, msg)
-			msg.Ack()
 			<-guard
 		}(ctx, *msg)
 	}
@@ -108,18 +107,23 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		return
 	}
 	mu.Unlock()
-
+	var reader *bufio.Reader
+	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
+		r := g.GcsClient.GetReader()
+		reader = bufio.NewReader(r)
+	}
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
-		err := sr.StockandSalesParser(g, cfg)
+		err := sr.StockandSalesParser(g, cfg, reader)
 		if err == nil {
 			msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
-		err := sr.StockandSalesCSVParser(g, cfg)
+		err := sr.StockandSalesCSVParser(g, cfg, reader)
 		if err == nil {
 			msg.Ack()
 		}
+
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
@@ -158,11 +162,8 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		os.Remove(outPutFile)
 		msg.Ack()
 
-		// fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 
-		r := g.GcsClient.GetReader()
-		reader := bufio.NewReader(r)
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {

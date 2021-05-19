@@ -13,21 +13,17 @@ import (
 	cr "github.com/brkelkar/common_utils/configreader"
 )
 
-var (
-	fd                   ut.FileDetail
-	stockandsalesRecords md.Record
-	batchRecords         md.RecordBatch
-	invoicRrecords       md.RecordInvoice
-	cm                   md.Common
-)
-
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
+	var fd ut.FileDetail
+	var stockandsalesRecords md.Record
+	var batchRecords md.RecordBatch
+	var invoicRrecords md.RecordInvoice
+	var cm md.Common
+
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -36,7 +32,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	cMap := make(map[string]md.Company)
 	cMapInvoice := make(map[string]md.CompanyInvoice)
 
-	assignHeader(g)
+	assignHeader(g, &stockandsalesRecords, &batchRecords, &invoicRrecords)
 
 	SS_count := 0
 	INV_Count := 0
@@ -144,10 +140,14 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config) (err error) {
 	return err
 }
 
-func assignHeader(g ut.GcsFile) {
+func assignHeader(g ut.GcsFile, stockandsalesRecords *md.Record, batchRecords *md.RecordBatch, invoicRrecords *md.RecordInvoice) {
 	stockandsalesRecords.FilePath = g.FilePath
 	batchRecords.FilePath = g.FilePath
 	invoicRrecords.FilePath = g.FilePath
+
+	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	batchRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	invoicRrecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 
 	stockandsalesRecords.FileType = hd.FileType
 	batchRecords.FileType = hd.FileType

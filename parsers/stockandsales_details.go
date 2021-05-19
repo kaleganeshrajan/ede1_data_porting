@@ -5,7 +5,6 @@ import (
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
-	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -18,8 +17,6 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	// r := g.GcsClient.GetReader()
-	// reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -27,7 +24,10 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 	cMap := make(map[string]md.Company)
 
-	assignHeaders(g)
+	var stockandsalesRecords md.Record
+	var fd ut.FileDetail
+
+	assignHeaders(g, &stockandsalesRecords)
 
 	SS_count := 0
 	flag := 1
@@ -51,9 +51,13 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 		if flag == 1 {
 			flag = 0
 		} else {
+			if len(lineSlice) < 14 {
+				log.Println("File is not correct format")
+				return nil
+			}
 			SS_count = SS_count + 1
 
-			tempItem := assignStandardItem(lineSlice)
+			tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
@@ -90,16 +94,13 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 	return err
 }
 
-func assignStandardItem(lineSlice []string) (tempItem md.Item) {
-	if len(lineSlice) < 10 {
-		fmt.Println(lineSlice)
-	}
+func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (tempItem md.Item) {
+	var cm md.Common
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
 	stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
-
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
 	tempItem.PTR = strings.TrimSpace(lineSlice[hd.StandardPTR])
 	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.OpeingUnits])
