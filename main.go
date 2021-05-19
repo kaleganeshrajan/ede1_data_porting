@@ -108,14 +108,17 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	}
 	mu.Unlock()
 
+	r := g.GcsClient.GetReader()
+	reader := bufio.NewReader(r)
+
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
-		err := sr.StockandSalesParser(g, cfg)
+		err := sr.StockandSalesParser(g, cfg, reader)
 		if err == nil {
 			msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
-		err := sr.StockandSalesCSVParser(g, cfg)
+		err := sr.StockandSalesCSVParser(g, cfg, reader)
 		if err == nil {
 			msg.Ack()
 		}
@@ -131,14 +134,12 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		fmt.Println(string(out))
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			r := g.GcsClient.GetReader()
-			reader := bufio.NewReader(r)
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err == nil {
 				msg.Ack()
 			}
 		} else {
-			err := sr.StockandSalesDits(g, cfg)
+			err := sr.StockandSalesDits(g, cfg, reader)
 			if err == nil {
 				msg.Ack()
 			}

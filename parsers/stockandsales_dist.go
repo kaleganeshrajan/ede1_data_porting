@@ -13,17 +13,16 @@ import (
 	cr "github.com/brkelkar/common_utils/configreader"
 )
 
-func StockandSalesDits(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
 	}
 	var recordsDist md.RecordDist
+	var fd ut.FileDetail
 
 	flag := 1
 
@@ -42,6 +41,10 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config) (err error) {
 		if flag == 1 {
 			flag = 0
 		} else {
+			if len(lineSlice) < 6 {
+				log.Println("File is not correct format")
+				return nil
+			}
 			recordsDist := assignItems(lineSlice)
 			recordsDist.Key = strings.TrimSpace(g.FileKey)
 			if strings.Contains(g.BucketName, "MTD") {
@@ -71,6 +74,7 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config) (err error) {
 }
 
 func assignItems(lineSlice []string) (recordsDist md.RecordDist) {
+	var cm md.Common
 	recordsDist.CityName = strings.TrimSpace(lineSlice[hd.CityName])
 	recordsDist.DistName = strings.TrimSpace(lineSlice[hd.DistName])
 	recordsDist.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist])

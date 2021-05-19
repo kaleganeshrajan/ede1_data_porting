@@ -17,8 +17,6 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	// r := g.GcsClient.GetReader()
-	// reader := bufio.NewReader(r)
 	if reader == nil {
 		log.Println("error while getting reader")
 		return
@@ -26,11 +24,14 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 	cMap := make(map[string]md.Company)
 
-	assignHeaders(g)
+	var stockandsalesRecords md.Record
+	var fd ut.FileDetail
+
+	assignHeaders(g, &stockandsalesRecords)
 
 	SS_count := 0
 	flag := 1
-
+	sep := ";"
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err == io.EOF {
@@ -41,14 +42,18 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 		}
 
 		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, ";")
+		lineSlice := strings.Split(line, sep)
 
 		if flag == 1 {
 			flag = 0
 		} else {
+			if len(lineSlice) < 14 {
+				log.Println("File is not correct format")
+				return nil
+			}
 			SS_count = SS_count + 1
 
-			tempItem := assignStandardItem(lineSlice)
+			tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
@@ -85,7 +90,8 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 	return err
 }
 
-func assignStandardItem(lineSlice []string) (tempItem md.Item) {
+func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (tempItem md.Item) {
+	var cm md.Common
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
