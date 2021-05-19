@@ -22,6 +22,7 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		return
 	}
 	var recordsDist md.RecordDist
+	recordsDist.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	var fd ut.FileDetail
 
 	flag := 1

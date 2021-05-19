@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -123,15 +122,15 @@ func worker(ctx context.Context, msg pubsub.Message) {
 			msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
-		cmd := exec.Command("main.py")
-		out, err := cmd.Output()
+		// cmd := exec.Command("main.py")
+		// out, err := cmd.Output()
 
-		if err != nil {
-			println(err.Error())
-			return
-		}
+		// if err != nil {
+		// 	println(err.Error())
+		// 	return
+		// }
 
-		fmt.Println(string(out))
+		fmt.Println(g.FileName)
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)

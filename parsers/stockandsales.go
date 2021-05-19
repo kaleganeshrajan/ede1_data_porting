@@ -32,7 +32,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err
 	cMap := make(map[string]md.Company)
 	cMapInvoice := make(map[string]md.CompanyInvoice)
 
-	assignHeader(g,&stockandsalesRecords,&batchRecords,&invoicRrecords)
+	assignHeader(g, &stockandsalesRecords, &batchRecords, &invoicRrecords)
 
 	SS_count := 0
 	INV_Count := 0
@@ -140,10 +140,14 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err
 	return err
 }
 
-func assignHeader(g ut.GcsFile,stockandsalesRecords *md.Record,batchRecords *md.RecordBatch,invoicRrecords *md.RecordInvoice) {
+func assignHeader(g ut.GcsFile, stockandsalesRecords *md.Record, batchRecords *md.RecordBatch, invoicRrecords *md.RecordInvoice) {
 	stockandsalesRecords.FilePath = g.FilePath
 	batchRecords.FilePath = g.FilePath
 	invoicRrecords.FilePath = g.FilePath
+
+	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	batchRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	invoicRrecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 
 	stockandsalesRecords.FileType = hd.FileType
 	batchRecords.FileType = hd.FileType

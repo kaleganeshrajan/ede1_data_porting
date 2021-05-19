@@ -98,6 +98,7 @@ func assignHeaders(g ut.GcsFile, stockandsalesRecords *md.Record) {
 	stockandsalesRecords.Key = g.FileKey
 	stockandsalesRecords.FilePath = g.FilePath
 	stockandsalesRecords.FileType = hd.FileTypewithPTR
+	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		stockandsalesRecords.Duration = hd.DurationMTD
 	} else {

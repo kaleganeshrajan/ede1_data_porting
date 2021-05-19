@@ -30,6 +30,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (
 
 	records.FilePath = g.FilePath
 	records.FileType = hd.FileType
+	records.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		records.Duration = hd.DurationMTD
 	} else {
