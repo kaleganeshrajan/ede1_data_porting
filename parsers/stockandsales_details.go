@@ -59,10 +59,8 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 				log.Println("File is not correct format")
 				return nil
 			}
-			if len(strings.TrimSpace(lineSlice[hd.Stockistcode])) < 1 {
-				break
-			}
-			SS_count = SS_count + 1
+			if len(strings.TrimSpace(lineSlice[hd.Stockistcode])) > 1 {
+				SS_count = SS_count + 1
 
 			tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)
 			g.DistributorCode = stockandsalesRecords.DistributorCode
@@ -75,6 +73,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
+			}			
 		}
 	}
 
