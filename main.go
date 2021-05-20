@@ -124,6 +124,8 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
 
+		log.Printf("Message Id : %v\n Object Generation : %v\n Object Id : %v\n",msg.ID,msg.Attributes["objectGeneration"],msg.Attributes["objectId"])
+
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
 		log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
