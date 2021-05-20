@@ -59,6 +59,9 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 				log.Println("File is not correct format")
 				return nil
 			}
+			if len(strings.TrimSpace(lineSlice[hd.Stockistcode])) < 1 {
+				break
+			}
 			SS_count = SS_count + 1
 
 			tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)

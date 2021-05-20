@@ -115,7 +115,6 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		err := sr.StockandSalesParser(g, cfg)
 		if err != nil {
 			log.Println(err)
-
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
 		msg.Ack()
@@ -124,13 +123,12 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		if err != nil {
 			log.Println(err)
 		}
-
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
 
-		log.Printf("Message Id : %v Object Generation : %v Object Id : %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
+		//log.Printf("Message Id : %v Object Generation : %v Object Id : %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
 		log.Println(script, "-p", fileName, "-d", outPutFile)
@@ -166,7 +164,6 @@ func worker(ctx context.Context, msg pubsub.Message) {
 				return
 			}
 		}
-
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		r := g.GcsClient.GetReader()
 		reader := bufio.NewReader(r)
@@ -177,7 +174,6 @@ func worker(ctx context.Context, msg pubsub.Message) {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
 				log.Println(err)
-
 			}
 		} else {
 			err := sr.StockandSalesDits(g, cfg, reader)
