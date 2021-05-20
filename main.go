@@ -184,6 +184,6 @@ func worker(ctx context.Context, msg pubsub.Message) {
 }
 
 func ackMessgae(msg pubsub.Message) {
-	log.Printf("Ack Message ID: %v ObjectCreation: %v ObjectID: %v", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
+	log.Printf("Ack Message ID: %v ObjectCreation: %v ObjectID: %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 
 }
