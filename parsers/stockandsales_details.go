@@ -100,11 +100,20 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (tempItem md.Item) {
 	var cm md.Common
+	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
-	cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
-	stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
-	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
-	stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
+	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
+	if err != nil {
+		log.Printf("CM From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
+	} else {
+		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
+	}
+	cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
+	if err != nil {
+		log.Printf("CM To Date Error: %v : %v", err, lineSlice[hd.Todate])
+	} else {
+		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
+	}
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
 	tempItem.PTR = strings.TrimSpace(lineSlice[hd.StandardPTR])
 	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.OpeingUnits])
