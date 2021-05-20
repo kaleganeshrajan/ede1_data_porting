@@ -105,7 +105,19 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
-	log.Println("From Date : " + strings.TrimSpace(lineSlice[hd.Fromdate]))
+	log.Println("0 : " + strings.TrimSpace(lineSlice[0]))
+	log.Println("1 : " + strings.TrimSpace(lineSlice[1]))
+	log.Println("2 : " + strings.TrimSpace(lineSlice[2]))
+	log.Println("3 : " + strings.TrimSpace(lineSlice[3]))
+	log.Println("4 : " + strings.TrimSpace(lineSlice[4]))
+	log.Println("5 : " + strings.TrimSpace(lineSlice[5]))
+	log.Println("6 : " + strings.TrimSpace(lineSlice[6]))
+	log.Println("7 : " + strings.TrimSpace(lineSlice[7]))
+	log.Println("8 : " + strings.TrimSpace(lineSlice[8]))
+	log.Println("9 : " + strings.TrimSpace(lineSlice[9]))
+	log.Println("10 : " + strings.TrimSpace(lineSlice[10]))
+	log.Println("11 : " + strings.TrimSpace(lineSlice[11]))
+	log.Println("12 : " + strings.TrimSpace(lineSlice[12]))
 	if err != nil {
 		log.Printf("CM From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {
