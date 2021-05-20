@@ -120,7 +120,7 @@ class FileConfig:
             print("File not found or Invalid file type.")
             return
 
-        # Director object
+        # Director object creted
         director = Director(self._awacslogger)
 
         # Build Parser
