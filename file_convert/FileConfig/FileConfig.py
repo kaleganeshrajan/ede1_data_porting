@@ -1,4 +1,3 @@
-
 import os.path
 from datetime import datetime
 from BucketHandler import BucketCon
@@ -15,6 +14,7 @@ class FileConfig:
         self.fileType = None
         self.bucketName = None
         self.destPath = None
+        self.tempfile = '/tmp_'
         self._awacslogger = awacslogger
         self._blob = None
 
@@ -31,13 +31,11 @@ class FileConfig:
             pathstr = path[1].split('/')
             self.bucketname = pathstr[0]  # bucket name extraction
             self.filename = pathstr[len(pathstr) - 1]  # filename extraction
-            if len(pathstr) > 2:
-                # filepath extraction
-                self.filePath = '/'.join(pathstr[1:len(pathstr) - 1]) + '/'
-            else:
-                self.filePath = ''
+            self.filePath = '/'.join(pathstr[1:len(pathstr) - 1]) + '/'
         except Exception as e:
             self._awacslogger.error("File path argument incorrect:" + str(e))
+        temp = self.filePath.split('/')
+        self.tempfile = temp[len(temp) - 2] + '_'
 
     # File Name
     @property
@@ -115,7 +113,7 @@ class FileConfig:
             self._awacslogger.info(
                 self.fileType + " File type Identified: " + self.fileName + self.fileType)
             # initializing the class
-            parser = DBF(self._awacslogger, self.fileName)
+            parser = DBF(self._awacslogger, self.tempfile + self.fileName)
         else:
             parser = None
             self._awacslogger.error("File not found or Invalid file type.")
@@ -133,7 +131,7 @@ class FileConfig:
         convert = director.parseFile(self._blob, self)  # Parse method call
         convert.saveConvertedFile(self)  # Saving parsed file
         # Deleting temp file if created
-        convert.deleteTempFile(self.fileName + self.fileType)
+        convert.deleteTempFile(self.tempfile + self.fileName + '.DBF')
 
 
 # Director class handles builder
@@ -174,6 +172,8 @@ class Parser:
         self.__df = df
 
     def saveConvertedFile(self, sourcefile) -> None:
+        # Check df is null
+        
         try:
             self.__df.to_csv(sourcefile.destPath, '|',  index=False)
             self._awacslogger.info(
@@ -183,7 +183,7 @@ class Parser:
             self._awacslogger.error(
                 "Ported file cannot save at :" + sourcefile.destPath + " ERROR: " + str(e))
             print("Ported file cannot save at :" +
-                  sourcefile.destPath + " ERROR: " + str(e))
+                    sourcefile.destPath + " ERROR: " + str(e))
             exit(-1)
 
     def deleteTempFile(self, path) -> None:
