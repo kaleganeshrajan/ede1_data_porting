@@ -5,6 +5,7 @@ import (
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,7 +22,7 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 
 	if reader == nil {
 		log.Println("error while getting reader")
-		return
+		return errors.New("error while getting reader")
 	}
 
 	var fd ut.FileDetail
@@ -64,7 +65,7 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 			}
 			SS_count = SS_count + 1
 
-			tempItem := assignItem(lineSlice,&stockandsalesRecords)
+			tempItem := assignItem(lineSlice, &stockandsalesRecords)
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {

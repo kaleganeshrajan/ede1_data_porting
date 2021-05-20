@@ -111,27 +111,33 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		err := sr.StockandSalesParser(g, cfg)
-		if err == nil {
-			msg.Ack()
+		defer msg.Ack()
+
+		if err != nil {
+			log.Println(err)
+
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
 		err := sr.StockandSalesCSVParser(g, cfg)
-		if err == nil {
-			msg.Ack()
+		if err != nil {
+			log.Println(err)
 		}
+
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
 
-		log.Printf("Message Id : %v Object Generation : %v Object Id : %v\n",msg.ID,msg.Attributes["objectGeneration"],msg.Attributes["objectId"])
+		log.Printf("Message Id : %v Object Generation : %v Object Id : %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
 		log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
 		cmd.Run()
+		defer msg.Ack()
 		fd, err := os.Open(outPutFile)
+		defer os.Remove(outPutFile)
 		if err != nil {
 			log.Printf("Error while open Excel file : %v\n", err)
 			return
@@ -142,34 +148,39 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
+				log.Println(err)
 				return
 			}
 		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
 			err := sr.StockandSalesDetails(g, cfg, reader)
 			if err != nil {
+				log.Println(err)
 				return
 			}
 		} else {
 			err := sr.StockandSalesDits(g, cfg, reader)
 			if err != nil {
+				log.Println(err)
 				return
 			}
 		}
-		os.Remove(outPutFile)
-		msg.Ack()
 
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		r := g.GcsClient.GetReader()
 		reader := bufio.NewReader(r)
+		defer msg.Ack()
+
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
-				msg.Ack()
+				log.Println(err)
+
 			}
 		} else {
 			err := sr.StockandSalesDits(g, cfg, reader)
 			if err != nil {
-				msg.Ack()
+				log.Println(err)
+
 			}
 		}
 	}

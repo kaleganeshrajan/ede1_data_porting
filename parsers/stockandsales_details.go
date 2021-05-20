@@ -5,6 +5,7 @@ import (
 	hd "ede1_data_porting/headers"
 	md "ede1_data_porting/models"
 	ut "ede1_data_porting/utils"
+	"errors"
 	"io"
 	"log"
 	"strings"
@@ -19,7 +20,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 	if reader == nil {
 		log.Println("error while getting reader")
-		return
+		return errors.New("error while getting reader")
 	}
 
 	cMap := make(map[string]md.Company)
@@ -46,6 +47,9 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 		if len(lineSlice) <= 3 {
 			seperator = "|"
 			lineSlice = strings.Split(line, seperator)
+			if len(lineSlice) <= 3 {
+				return errors.New("FIle format is wrong " + g.FileName)
+			}
 		}
 
 		if flag == 1 {
@@ -89,9 +93,9 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 	log.Printf("File parsing done: %v", g.FilePath)
 
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
-	g.LogFileDetails(true)
+	//g.LogFileDetails(true)
 
-	return err
+	return nil
 }
 
 func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (tempItem md.Item) {
