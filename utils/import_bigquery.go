@@ -38,7 +38,7 @@ func GenerateJsonFile(invoicRrecords interface{}, tableName string) (err error) 
 
 //ImportCSVFromFile import data to big query
 func ImporttoBigquery(projectID, datasetID, tableID, filename string) (err error) {
-	log.Printf("File import to bigquery start, TableName := %v", tableID)
+	//log.Printf("File import to bigquery start, TableName := %v", tableID)
 	ctx := context.Background()
 	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
@@ -71,6 +71,6 @@ func ImporttoBigquery(projectID, datasetID, tableID, filename string) (err error
 		return err
 	}
 	os.Remove(filename)
-	log.Printf("File import to bigquery end, TableName := %v", tableID)
+	//log.Printf("File import to bigquery end, TableName := %v", tableID)
 	return nil
 }
