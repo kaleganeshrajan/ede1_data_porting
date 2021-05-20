@@ -92,7 +92,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		return
 	}
 	log.Printf("Start Message ID: %v ObjectCreation: %v ObjectID: %v", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
-	defer ackMessgae(msg)
+	//defer ackMessgae(msg)
 	var bucketDetails BukectStruct
 	json.Unmarshal(msg.Data, &bucketDetails)
 	var e models.GCSEvent
@@ -142,7 +142,8 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		}
 
 		reader := bufio.NewReader(fd)
-
+		msg.Ack()
+		ackMessgae(msg)
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
@@ -185,5 +186,4 @@ func worker(ctx context.Context, msg pubsub.Message) {
 
 func ackMessgae(msg pubsub.Message) {
 	log.Printf("Ack Message ID: %v ObjectCreation: %v ObjectID: %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
-
 }
