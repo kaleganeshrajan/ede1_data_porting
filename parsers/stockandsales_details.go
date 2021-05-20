@@ -62,18 +62,18 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 			if len(strings.TrimSpace(lineSlice[hd.Stockistcode])) > 1 {
 				SS_count = SS_count + 1
 
-			tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)
-			g.DistributorCode = stockandsalesRecords.DistributorCode
+				tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)
+				g.DistributorCode = stockandsalesRecords.DistributorCode
 
-			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
-				var tempCompany md.Company
-				tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.Companyname])
-				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
+				if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
+					var tempCompany md.Company
+					tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.Companyname])
+					cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
+				}
+				t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
+				t.Items = append(t.Items, tempItem)
+				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 			}
-			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
-			t.Items = append(t.Items, tempItem)
-			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
-			}			
 		}
 	}
 
@@ -105,19 +105,7 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
-	log.Println("0 : " + strings.TrimSpace(lineSlice[0]))
-	log.Println("1 : " + strings.TrimSpace(lineSlice[1]))
-	log.Println("2 : " + strings.TrimSpace(lineSlice[2]))
-	log.Println("3 : " + strings.TrimSpace(lineSlice[3]))
-	log.Println("4 : " + strings.TrimSpace(lineSlice[4]))
-	log.Println("5 : " + strings.TrimSpace(lineSlice[5]))
-	log.Println("6 : " + strings.TrimSpace(lineSlice[6]))
-	log.Println("7 : " + strings.TrimSpace(lineSlice[7]))
-	log.Println("8 : " + strings.TrimSpace(lineSlice[8]))
-	log.Println("9 : " + strings.TrimSpace(lineSlice[9]))
-	log.Println("10 : " + strings.TrimSpace(lineSlice[10]))
-	log.Println("11 : " + strings.TrimSpace(lineSlice[11]))
-	log.Println("12 : " + strings.TrimSpace(lineSlice[12]))
+
 	if err != nil {
 		log.Printf("CM From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {
