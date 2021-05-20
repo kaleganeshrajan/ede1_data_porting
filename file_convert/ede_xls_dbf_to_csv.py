@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from FileConfig import FileConfig
 from AwacsLogger import AwacsLogger
 import argparse
