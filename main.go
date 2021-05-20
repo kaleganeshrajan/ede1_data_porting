@@ -7,7 +7,6 @@ import (
 	sr "ede1_data_porting/parsers"
 	"ede1_data_porting/utils"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -79,6 +78,7 @@ func main() {
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
 		go func(ctx context.Context, msg pubsub.Message) {
+			//msg.Ack()
 			time.Sleep(5 * time.Millisecond)
 			worker(ctx, msg)
 			<-guard
@@ -87,9 +87,10 @@ func main() {
 }
 
 func worker(ctx context.Context, msg pubsub.Message) {
-	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
-	// 	msg.Ack()
-	// }
+	if msg.Attributes["eventType"] == "OBJECT_DELETE" {
+		msg.Ack()
+		return
+	}
 
 	var bucketDetails BukectStruct
 	json.Unmarshal(msg.Data, &bucketDetails)
@@ -107,36 +108,30 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		return
 	}
 	mu.Unlock()
-	var reader *bufio.Reader
-	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
-		r := g.GcsClient.GetReader()
-		reader = bufio.NewReader(r)
-	}
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
-		err := sr.StockandSalesParser(g, cfg, reader)
+		err := sr.StockandSalesParser(g, cfg)
 		if err == nil {
 			msg.Ack()
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
-		err := sr.StockandSalesCSVParser(g, cfg, reader)
+		err := sr.StockandSalesCSVParser(g, cfg)
 		if err == nil {
 			msg.Ack()
 		}
-
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
 
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
-		fmt.Println(script, "-p", fileName, "-d", outPutFile)
+		log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
 		cmd.Run()
 		fd, err := os.Open(outPutFile)
 		if err != nil {
-			println(err.Error())
+			log.Printf("Error while open Excel file : %v\n", err)
 			return
 		}
 
@@ -148,7 +143,6 @@ func worker(ctx context.Context, msg pubsub.Message) {
 				return
 			}
 		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
-
 			err := sr.StockandSalesDetails(g, cfg, reader)
 			if err != nil {
 				return
@@ -163,7 +157,8 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		msg.Ack()
 
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
-
+		r := g.GcsClient.GetReader()
+		reader := bufio.NewReader(r)
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
