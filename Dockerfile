@@ -1,7 +1,7 @@
 FROM  golang:1.15.7-buster
 
 # Set the Current Working Directory inside the container
-WORKDIR $GOPATH/src/github.com/brkelkar/ede1_data_porting
+WORKDIR $GOPATH/src/github.com/kaleganeshrajan/ede1_data_porting
 
 # Copy everything from the current directory to the PWD (Present Working Directory) inside the container
 COPY . .
