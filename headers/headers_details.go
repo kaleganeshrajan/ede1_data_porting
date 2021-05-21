@@ -91,6 +91,7 @@ const (
 	Batch_details        = "batch_details"
 	Invoice_details      = "invoice_details"
 	File_details         = "file_details"
+	Error_File_details   = "error_file_details"
 	Stock_and_Sales_Dist = "stock_and_sale_dist"
 )
 

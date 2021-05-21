@@ -59,26 +59,25 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		if flag == 1 {
 			flag = 0
 		} else {
-			if len(lineSlice) < 17 {
-				log.Println("File is not correct format")
-				return nil
-			}
-			SS_count = SS_count + 1
+			if len(lineSlice) == 17 {
+				SS_count = SS_count + 1
 
-			tempItem := assignItem(lineSlice, &stockandsalesRecords)
-			g.DistributorCode = stockandsalesRecords.DistributorCode
+				tempItem := assignItem(lineSlice, &stockandsalesRecords)
+				g.DistributorCode = stockandsalesRecords.DistributorCode
 
-			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
-				var tempCompany md.Company
-				tempCompany.CompanyCode = strings.TrimSpace(lineSlice[hd.CompanyCode])
-				tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.CompanyName])
-				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
+				if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
+					var tempCompany md.Company
+					tempCompany.CompanyCode = strings.TrimSpace(lineSlice[hd.CompanyCode])
+					tempCompany.CompanyName = strings.TrimSpace(lineSlice[hd.CompanyName])
+					cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
+				}
+				t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
+				t.Items = append(t.Items, tempItem)
+				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
+			} else {
+				return errors.New("file is not correct format")
 			}
-			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
-			t.Items = append(t.Items, tempItem)
-			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 		}
-
 	}
 
 	var testinter interface{}
@@ -102,7 +101,7 @@ func StockandSalesSale(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 	g.LogFileDetails(true)
 
-	return err
+	return nil
 }
 
 func assignHeaders(g ut.GcsFile, stockandsalesRecords *md.Record) {

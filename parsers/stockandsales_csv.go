@@ -14,18 +14,11 @@ import (
 )
 
 //StockandSalesParser parse stock and sales with PTR and without PTR
-func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
+func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config,reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	r := g.GcsClient.GetReader()
-	reader := bufio.NewReader(r)
-
-	if reader == nil {
-		log.Println("error while getting reader")
-		return
-	}
-
+	
 	var records md.Record
 	cMap := make(map[string]md.Company)
 	var fd ut.FileDetail
@@ -95,7 +88,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 
 	fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
 		0, int64(time.Since(startTime)/1000000), hd.File_details)
-	if err != nil {
+	if err != nil {		
 		return err
 	}
 
@@ -104,7 +97,7 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config) (err error) {
 
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 	g.LogFileDetails(true)
-	return err
+	return nil
 }
 
 func AssignItem(lineSlice []string) (tempItem md.Item) {

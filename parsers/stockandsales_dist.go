@@ -5,6 +5,7 @@ import (
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	ut "ede_porting/utils"
+	"errors"
 	"io"
 	"log"
 	"strings"
@@ -45,18 +46,19 @@ func StockandSalesDits(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err e
 		if flag == 1 {
 			flag = 0
 		} else {
-			if len(lineSlice) < 6 {
-				log.Println("File is not correct format")
-				return nil
-			}
-			recordsDist := assignItems(lineSlice)
-			recordsDist.Key = strings.TrimSpace(g.FileKey)
-			if strings.Contains(g.BucketName, "MTD") {
-				recordsDist.Duration = hd.DurationMTD
+			if len(lineSlice) == 6 {
+				recordsDist := assignItems(lineSlice)
+				recordsDist.Key = strings.TrimSpace(g.FileKey)
+				if strings.Contains(g.BucketName, "MTD") {
+					recordsDist.Duration = hd.DurationMTD
+				} else {
+					recordsDist.Duration = hd.DurationMonthly
+				}
+				recordsDist.FilePath = strings.TrimSpace(g.FilePath)
+
 			} else {
-				recordsDist.Duration = hd.DurationMonthly
+				return errors.New("file is not correct format")
 			}
-			recordsDist.FilePath = strings.TrimSpace(g.FilePath)
 		}
 	}
 

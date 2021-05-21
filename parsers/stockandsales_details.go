@@ -16,12 +16,7 @@ import (
 
 func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting details file parse: %v", g.FilePath)
-
-	if reader == nil {
-		log.Println("error while getting reader")
-		return errors.New("error while getting reader")
-	}
+	log.Printf("Starting file parse: %v", g.FilePath)	
 
 	cMap := make(map[string]md.Company)
 
@@ -72,11 +67,9 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 					cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 				}
 			} else {
-				log.Println("File is not correct format")
-				return nil
+				return errors.New("file is not correct format")
 			}
 		}
-
 	}
 
 	var testinter interface{}

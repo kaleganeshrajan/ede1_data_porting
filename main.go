@@ -3,10 +3,13 @@ package main
 import (
 	"bufio"
 	"context"
+	hd "ede_porting/headers"
 	"ede_porting/models"
 	sr "ede_porting/parsers"
 	"ede_porting/utils"
+	ut "ede_porting/utils"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -102,33 +105,45 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	e.Size = bucketDetails.Size
 
 	var mu sync.Mutex
+	var ef ut.ErrorFileDetail
 	mu.Lock()
 	g := *gcsFileAttr.HandleGCSEvent(ctx, e)
 	if !g.GcsClient.GetLastStatus() {
 		return
 	}
 	mu.Unlock()
+	var r io.Reader
+	var reader *bufio.Reader
+	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
+		r = g.GcsClient.GetReader()
+		reader = bufio.NewReader(r)
+
+		if reader == nil {
+			ef.ErrorFileDetails(g.FilePath, "error while getting reader", hd.Error_File_details, g)
+			log.Println("error while getting reader")
+			return
+		}
+	}
+
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		msg.Ack()
-		ackMessgae(msg)
-		err := sr.StockandSalesParser(g, cfg)
+		err := sr.StockandSalesParser(g, cfg, reader)
 		if err != nil {
+			ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
 		msg.Ack()
-		ackMessgae(msg)
-		err := sr.StockandSalesCSVParser(g, cfg)
+		err := sr.StockandSalesCSVParser(g, cfg, reader)
 		if err != nil {
+			ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
-
-		//log.Printf("Message Id : %v Object Generation : %v Object Id : %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
 		log.Println(script, "-p", fileName, "-d", outPutFile)
@@ -138,52 +153,54 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		fd, err := os.Open(outPutFile)
 		defer os.Remove(outPutFile)
 		if err != nil {
+			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", hd.Error_File_details, g)
 			log.Printf("Error while open Excel file : %v\n", err)
 			return
 		}
 
-		reader := bufio.NewReader(fd)
+		reader = bufio.NewReader(fd)
+		if reader == nil {
+			ef.ErrorFileDetails(g.FilePath, "error while getting reader", hd.Error_File_details, g)
+			log.Println("error while getting reader")
+			return
+		}
 		msg.Ack()
-		ackMessgae(msg)
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
+				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
 			err := sr.StockandSalesDetails(g, cfg, reader)
 			if err != nil {
+				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else {
 			err := sr.StockandSalesDits(g, cfg, reader)
 			if err != nil {
+				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
-		r := g.GcsClient.GetReader()
-		reader := bufio.NewReader(r)
-
 		msg.Ack()
-		ackMessgae(msg)
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, cfg, reader)
 			if err != nil {
+				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 				log.Println(err)
 			}
 		} else {
 			err := sr.StockandSalesDits(g, cfg, reader)
 			if err != nil {
+				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
 				log.Println(err)
 			}
 		}
 	}
-}
-
-func ackMessgae(msg pubsub.Message) {
-	log.Printf("Ack Message ID: %v ObjectCreation: %v ObjectID: %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 }
