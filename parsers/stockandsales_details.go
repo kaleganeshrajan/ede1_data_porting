@@ -108,7 +108,6 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
-
 	if err != nil {
 		log.Printf("CM From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {

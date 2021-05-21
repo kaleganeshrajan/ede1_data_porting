@@ -17,4 +17,4 @@ RUN pip3 install markdown-readme-generator
 RUN  pip3 install -r ./file_convert/requirements.txt 
 
 # Run the executable
-CMD ["./ede1_data_porting"]
+CMD ["./ede_porting"]
