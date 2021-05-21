@@ -2,9 +2,9 @@ package parsers
 
 import (
 	"bufio"
-	hd "ede1_data_porting/headers"
-	md "ede1_data_porting/models"
-	ut "ede1_data_porting/utils"
+	hd "ede_porting/headers"
+	md "ede_porting/models"
+	ut "ede_porting/utils"
 	"errors"
 	"io"
 	"log"
@@ -16,7 +16,7 @@ import (
 
 func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)
+	log.Printf("Starting details file parse: %v", g.FilePath)
 
 	if reader == nil {
 		log.Println("error while getting reader")

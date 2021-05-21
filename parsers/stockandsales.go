@@ -2,9 +2,9 @@ package parsers
 
 import (
 	"bufio"
-	hd "ede1_data_porting/headers"
-	md "ede1_data_porting/models"
-	ut "ede1_data_porting/utils"
+	hd "ede_porting/headers"
+	md "ede_porting/models"
+	ut "ede_porting/utils"
 	"io"
 	"log"
 	"strings"

@@ -1,4 +1,4 @@
-module ede1_data_porting
+module ede_porting
 
 go 1.16
 

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"context"
-	"ede1_data_porting/models"
+	"ede_porting/models"
 	"log"
 	"strconv"
 	"strings"

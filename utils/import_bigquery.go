@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	hd "ede1_data_porting/headers"
+	hd "ede_porting/headers"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/google/uuid"
