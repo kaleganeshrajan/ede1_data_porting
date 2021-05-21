@@ -78,7 +78,7 @@ func main() {
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
 		go func(ctx context.Context, msg pubsub.Message) {
-			msg.Ack()
+			//msg.Ack()
 			time.Sleep(5 * time.Millisecond)
 			worker(ctx, msg)
 			<-guard
