@@ -94,7 +94,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		msg.Ack()
 		return
 	}
-	log.Printf("Start Message ID: %v ObjectCreation: %v ObjectID: %v", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
+	//log.Printf("Start Message ID: %v ObjectCreation: %v ObjectID: %v", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 	//defer ackMessgae(msg)
 	var bucketDetails BukectStruct
 	json.Unmarshal(msg.Data, &bucketDetails)

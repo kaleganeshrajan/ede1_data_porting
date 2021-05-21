@@ -175,7 +175,7 @@ class Parser:
         # Check df is null
         
         try:
-            self.__df.to_csv(sourcefile.destPath, '|',  index=False)
+            self.__df.to_csv(sourcefile.destPath, ';',  index=False)
             self._awacslogger.info(
                 "Ported file saved at :" + sourcefile.destPath)
             print("Done.")
