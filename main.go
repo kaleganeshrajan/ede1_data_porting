@@ -130,7 +130,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 
 		//log.Printf("Message Id : %v Object Generation : %v Object Id : %v\n", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 
-		outPutFile := "gs://awacs-ede1-test/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
+		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
 		log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
