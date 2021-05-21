@@ -56,7 +56,6 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 			flag = 0
 		} else {
 			if len(lineSlice) == 14 {
-				log.Printf("length of slice : %v\n", len(lineSlice))
 				if len(strings.TrimSpace(lineSlice[hd.Stockistcode])) > 1 {
 					SS_count = SS_count + 1
 
