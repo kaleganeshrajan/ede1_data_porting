@@ -6,7 +6,7 @@ import pandas as pd
 from simpledbf import Dbf5
 
 
-seperator = '^'
+seperator = chr(0x10)
 
 class FileConfig:
 
