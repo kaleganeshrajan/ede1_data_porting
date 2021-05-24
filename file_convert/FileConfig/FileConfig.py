@@ -6,6 +6,8 @@ import pandas as pd
 from simpledbf import Dbf5
 
 
+seperator = '^'
+
 class FileConfig:
 
     def __init__(self, awacslogger):
@@ -173,9 +175,9 @@ class Parser:
 
     def saveConvertedFile(self, sourcefile) -> None:
         # Check df is null
-        
+
         try:
-            self.__df.to_csv(sourcefile.destPath, ';',  index=False)
+            self.__df.to_csv(sourcefile.destPath, seperator,  index=False)
             self._awacslogger.info(
                 "Ported file saved at :" + sourcefile.destPath)
             print("Done.")
@@ -183,7 +185,7 @@ class Parser:
             self._awacslogger.error(
                 "Ported file cannot save at :" + sourcefile.destPath + " ERROR: " + str(e))
             print("Ported file cannot save at :" +
-                    sourcefile.destPath + " ERROR: " + str(e))
+                  sourcefile.destPath + " ERROR: " + str(e))
             exit(-1)
 
     def deleteTempFile(self, path) -> None:
