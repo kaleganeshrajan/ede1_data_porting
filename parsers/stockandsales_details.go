@@ -43,7 +43,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 			seperator = "|"
 			lineSlice = strings.Split(line, seperator)
 			if len(lineSlice) <= 3 {
-				return errors.New("File format is wrong " + g.FileName)
+				return errors.New("File format is wrong char" + g.FileName)
 			}
 		}
 
