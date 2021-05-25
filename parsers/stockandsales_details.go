@@ -16,7 +16,7 @@ import (
 
 func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)	
+	log.Printf("Starting file parse: %v", g.FilePath)
 
 	cMap := make(map[string]md.Company)
 
@@ -27,7 +27,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 	SS_count := 0
 	flag := 1
-	seperator := "'0x10'"
+	seperator := ""
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err == io.EOF {
