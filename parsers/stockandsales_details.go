@@ -67,6 +67,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 					cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 				}
 			} else {
+				log.Println(lineSlice[0])
 				return errors.New("file is not correct format char")
 			}
 		}
