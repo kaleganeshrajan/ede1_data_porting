@@ -131,7 +131,7 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err
 	log.Printf("File parsing done: %v", g.FilePath)
 
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
-	g.LogFileDetails(true)
+	//g.LogFileDetails(true)
 	return err
 }
 

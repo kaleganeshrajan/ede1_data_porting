@@ -2,9 +2,9 @@ package parsers
 
 import (
 	"bufio"
-	hd "ede_porting/headers"
-	md "ede_porting/models"
-	ut "ede_porting/utils"
+	"ede_porting/headers"
+	"ede_porting/models"
+	"ede_porting/utils"
 	"io"
 	"log"
 	"strings"
@@ -14,23 +14,22 @@ import (
 )
 
 //StockandSalesParser parse stock and sales with PTR and without PTR
-func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config,reader *bufio.Reader) (err error) {
+func StockandSalesCSVParser(g utils.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	
-	var records md.Record
-	cMap := make(map[string]md.Company)
-	var fd ut.FileDetail
-	var cm md.Common
+	var records models.Record
+	cMap := make(map[string]models.Company)
+	var fd utils.FileDetail
+	var cm models.Common
 
 	records.FilePath = g.FilePath
-	records.FileType = hd.FileType
+	records.FileType = headers.FileType
 	records.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
-		records.Duration = hd.DurationMTD
+		records.Duration = headers.DurationMTD
 	} else {
-		records.Duration = hd.DurationMonthly
+		records.Duration = headers.DurationMonthly
 	}
 	SS_count := 0
 
@@ -47,29 +46,29 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config,reader *bufio.Reader) (e
 		line = strings.TrimSpace(line)
 		lineSlice := strings.Split(line, ",")
 
-		lineSlice[0] = ut.Removespacialcharactor(lineSlice[0])
+		lineSlice[0] = utils.Removespacialcharactor(lineSlice[0])
 
 		switch lineSlice[0] {
 		case "H":
-			records.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist_Code])
-			cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
+			records.DistributorCode = strings.TrimSpace(lineSlice[headers.Stockist_Code])
+			cm.FromDate, _ = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.From_Date]))
 			records.FromDate = cm.FromDate.Format("2006-01-02")
-			cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
+			cm.ToDate, _ = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.To_Date]))
 			records.ToDate = cm.ToDate.Format("2006-01-02")
 		case "T":
 			SS_count = SS_count + 1
 			tempItem := AssignItem(lineSlice)
 
-			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
+			if _, ok := cMap[strings.TrimSpace(lineSlice[headers.Company_code])]; !ok {
 				tempCompany := assignCompanySS(lineSlice)
-				cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = tempCompany
+				cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = tempCompany
 			}
-			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
+			t := cMap[strings.TrimSpace(lineSlice[headers.Company_code])]
 			t.Items = append(t.Items, tempItem)
-			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
+			cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = t
 
 			if len(lineSlice) >= 16 {
-				records.FileType = hd.FileTypePTR
+				records.FileType = headers.FileTypePTR
 			}
 		}
 	}
@@ -80,15 +79,15 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config,reader *bufio.Reader) (e
 			records.Companies = append(records.Companies, val)
 		}
 		testinter = records
-		err = ut.GenerateJsonFile(testinter, hd.Stock_and_Sales)
+		err = utils.GenerateJsonFile(testinter, headers.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
 	}
 
 	fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
-		0, int64(time.Since(startTime)/1000000), hd.File_details)
-	if err != nil {		
+		0, int64(time.Since(startTime)/1000000), headers.File_details)
+	if err != nil {
 		return err
 	}
 
@@ -96,26 +95,26 @@ func StockandSalesCSVParser(g ut.GcsFile, cfg cr.Config,reader *bufio.Reader) (e
 	log.Printf("File parsing done: %v", g.FilePath)
 
 	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
-	g.LogFileDetails(true)
+	//g.LogFileDetails(true)
 	return nil
 }
 
-func AssignItem(lineSlice []string) (tempItem md.Item) {
+func AssignItem(lineSlice []string) (tempItem models.Item) {
 	PTRLength := 0
-	tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[hd.Csv_Uniform_Pdt_Code])
-	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Csv_Stkt_Product_Code])
-	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Csv_Product_Name])
-	tempItem.Pack = strings.TrimSpace(lineSlice[hd.Csv_Pack])
+	tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[headers.Csv_Uniform_Pdt_Code])
+	tempItem.Item_code = strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code])
+	tempItem.Item_name = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
+	tempItem.Pack = strings.TrimSpace(lineSlice[headers.Csv_Pack])
 	if len(lineSlice) >= 16 {
-		tempItem.PTR = strings.TrimSpace(lineSlice[hd.Csv_PTR])
+		tempItem.PTR = strings.TrimSpace(lineSlice[headers.Csv_PTR])
 		PTRLength = 1
 	}
-	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.Csv_Opening_Qty+PTRLength])
-	tempItem.Purchases_Reciepts = strings.TrimSpace(lineSlice[hd.Csv_Receipts_Qty+PTRLength])
-	tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.Csv_Sales_Qty+PTRLength])
-	tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.Csv_Sales_Ret_Qty+PTRLength])
-	tempItem.Purchase_return = strings.TrimSpace(lineSlice[hd.Csv_Purch_Ret_Qty+PTRLength])
-	tempItem.Adjustments = strings.TrimSpace(lineSlice[hd.Csv_Adjustments_Qty+PTRLength])
-	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.Csv_ClosingQty+PTRLength])
+	tempItem.Opening_stock = strings.TrimSpace(lineSlice[headers.Csv_Opening_Qty+PTRLength])
+	tempItem.Purchases_Reciepts = strings.TrimSpace(lineSlice[headers.Csv_Receipts_Qty+PTRLength])
+	tempItem.Sales_qty = strings.TrimSpace(lineSlice[headers.Csv_Sales_Qty+PTRLength])
+	tempItem.Sales_return = strings.TrimSpace(lineSlice[headers.Csv_Sales_Ret_Qty+PTRLength])
+	tempItem.Purchase_return = strings.TrimSpace(lineSlice[headers.Csv_Purch_Ret_Qty+PTRLength])
+	tempItem.Adjustments = strings.TrimSpace(lineSlice[headers.Csv_Adjustments_Qty+PTRLength])
+	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[headers.Csv_ClosingQty+PTRLength])
 	return tempItem
 }

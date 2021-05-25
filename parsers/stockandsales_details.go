@@ -27,7 +27,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 
 	SS_count := 0
 	flag := 1
-	seperator := ";"
+	seperator := "0x10"
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err == io.EOF {
@@ -43,7 +43,7 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 			seperator = "|"
 			lineSlice = strings.Split(line, seperator)
 			if len(lineSlice) <= 3 {
-				return errors.New("FIle format is wrong " + g.FileName)
+				return errors.New("File format is wrong " + g.FileName)
 			}
 		}
 

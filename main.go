@@ -3,11 +3,10 @@ package main
 import (
 	"bufio"
 	"context"
-	hd "ede_porting/headers"
+	"ede_porting/headers"
 	"ede_porting/models"
-	sr "ede_porting/parsers"
+	"ede_porting/parsers"
 	"ede_porting/utils"
-	ut "ede_porting/utils"
 	"encoding/json"
 	"io"
 	"log"
@@ -105,7 +104,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	e.Size = bucketDetails.Size
 
 	var mu sync.Mutex
-	var ef ut.ErrorFileDetail
+	var ef utils.ErrorFileDetail
 	mu.Lock()
 	g := *gcsFileAttr.HandleGCSEvent(ctx, e)
 	if !g.GcsClient.GetLastStatus() {
@@ -119,7 +118,7 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		reader = bufio.NewReader(r)
 
 		if reader == nil {
-			ef.ErrorFileDetails(g.FilePath, "error while getting reader", hd.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")
 			return
 		}
@@ -128,16 +127,16 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		msg.Ack()
-		err := sr.StockandSalesParser(g, cfg, reader)
+		err := parsers.StockandSalesParser(g, cfg, reader)
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
 		msg.Ack()
-		err := sr.StockandSalesCSVParser(g, cfg, reader)
+		err := parsers.StockandSalesCSVParser(g, cfg, reader)
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
@@ -153,36 +152,36 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		fd, err := os.Open(outPutFile)
 		defer os.Remove(outPutFile)
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", hd.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", headers.Error_File_details, g)
 			log.Printf("Error while open Excel file : %v\n", err)
 			return
 		}
 
 		reader = bufio.NewReader(fd)
 		if reader == nil {
-			ef.ErrorFileDetails(g.FilePath, "error while getting reader", hd.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")
 			return
 		}
 		msg.Ack()
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			err := sr.StockandSalesSale(g, cfg, reader)
+			err := parsers.StockandSalesSale(g, cfg, reader)
 			if err != nil {
-				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
-			err := sr.StockandSalesDetails(g, cfg, reader)
+			err := parsers.StockandSalesDetails(g, cfg, reader)
 			if err != nil {
-				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else {
-			err := sr.StockandSalesDits(g, cfg, reader)
+			err := parsers.StockandSalesDits(g, cfg, reader)
 			if err != nil {
-				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
@@ -190,15 +189,15 @@ func worker(ctx context.Context, msg pubsub.Message) {
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		msg.Ack()
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			err := sr.StockandSalesSale(g, cfg, reader)
+			err := parsers.StockandSalesSale(g, cfg, reader)
 			if err != nil {
-				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 			}
 		} else {
-			err := sr.StockandSalesDits(g, cfg, reader)
+			err := parsers.StockandSalesDits(g, cfg, reader)
 			if err != nil {
-				ef.ErrorFileDetails(g.FilePath, err.Error(), hd.Error_File_details, g)
+				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 			}
 		}
