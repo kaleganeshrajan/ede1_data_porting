@@ -24,7 +24,7 @@ func StockandSalesCSVParser(g utils.GcsFile, cfg cr.Config, reader *bufio.Reader
 	var cm models.Common
 
 	records.FilePath = g.FilePath
-	records.FileType = headers.FileType
+	records.FileType = g.FileType
 	records.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		records.Duration = headers.DurationMTD
@@ -68,7 +68,7 @@ func StockandSalesCSVParser(g utils.GcsFile, cfg cr.Config, reader *bufio.Reader
 			cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = t
 
 			if len(lineSlice) >= 16 {
-				records.FileType = headers.FileTypePTR
+				records.FileType = g.FileType
 			}
 		}
 	}

@@ -44,7 +44,7 @@ func (g *GcsFile) HandleGCSEvent(ctx context.Context, e models.GCSEvent) *GcsFil
 	fileName := strings.Split(e.Name, "/")
 	g.FileKey = fileName[len(fileName)-2]
 	g.LastUpdateTime = e.Updated
-
+	g.FileType = fileName[len(fileName)-5]
 	g.ProcessingTime = e.Updated.Format("2006-01-02")
 	return g
 }

@@ -72,9 +72,9 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err
 			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 
 			if len(lineSlice) >= 24 {
-				stockandsalesRecords.FileType = hd.FileTypePTS
-				batchRecords.FileType = hd.FileTypePTS
-				invoicRrecords.FileType = hd.FileTypePTS
+				stockandsalesRecords.FileType = g.FileType
+				batchRecords.FileType = g.FileType
+				invoicRrecords.FileType = g.FileType
 			}
 		case "T2":
 			tempItem := assignItemH2(lineSlice)
@@ -144,9 +144,9 @@ func assignHeader(g ut.GcsFile, stockandsalesRecords *md.Record, batchRecords *m
 	batchRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	invoicRrecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 
-	stockandsalesRecords.FileType = hd.FileType
-	batchRecords.FileType = hd.FileType
-	invoicRrecords.FileType = hd.FileType
+	stockandsalesRecords.FileType = g.FileType
+	batchRecords.FileType = g.FileType
+	invoicRrecords.FileType = g.FileType
 
 	if strings.Contains(g.BucketName, "MTD") {
 		invoicRrecords.Duration = hd.DurationMTD
