@@ -1,5 +1,4 @@
-FROM  golang:stretch
-
+FROM  golang:1.5-alpine3.12
 # Set the Current Working Directory inside the container
 WORKDIR $GOPATH/src/github.com/kaleganeshrajan/ede1_data_porting
 
