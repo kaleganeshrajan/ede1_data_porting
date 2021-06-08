@@ -1,4 +1,4 @@
-FROM  golang:1.5-alpine3.12
+FROM  golang:1.15.13-alpine3.13
 # Set the Current Working Directory inside the container
 WORKDIR $GOPATH/src/github.com/kaleganeshrajan/ede1_data_porting
 
