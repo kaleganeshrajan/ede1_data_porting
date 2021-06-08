@@ -216,7 +216,7 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 
 	ExpiryDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
 	if err != nil {
-		log.Printf("stockandsales Expiry Date Error: %v : %v", err, lineSlice[hd.Fromdate])
+		log.Printf("stockandsales Expiry Date Error: %v : %v", err, lineSlice[hd.H2_ExpiryDate])
 	} else {
 		tempItem.Expiry_date = ExpiryDate.Format("2006-01-02")
 	}
@@ -229,7 +229,7 @@ func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	tempItem.Invoice_Number = lineSlice[hd.H3_Invoice_Number]
 	InvoiceDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
 	if err != nil {
-		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.Fromdate])
+		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
 	} else {
 		tempItem.Invoice_Date = InvoiceDate.Format("2006-01-02")
 	}
