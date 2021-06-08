@@ -60,6 +60,7 @@ func init() {
 	DateFormatMap["dd-MM-yy HH:mm:ss"] = "02-01-06 15:04:05"
 	DateFormatMap["dd/MM/yy HH:mm:ss"] = "02/01/06 15:04:05"
 	DateFormatMap["ddMMyyyy"] = "02012006"
+	DateFormatMap["MMyy"] = "0106"
 }
 
 //ConvertDate takes string returns time.time pointer
@@ -68,7 +69,7 @@ func ConvertDate(dateString string) (*time.Time, error) {
 		return nil, errors.New("format not found")
 	}
 	datelength := len(dateString)
-	if datelength < 8 {
+	if datelength < 8 && datelength > 4 {
 		dateString = "0" + dateString
 	}
 

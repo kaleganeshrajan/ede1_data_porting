@@ -46,7 +46,7 @@ func init() {
 
 func main() {
 
-	bucket := "awacs-monthlydata"
+	bucket := "awacs-monthlydata"// //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -69,7 +69,9 @@ func main() {
 			}
 			if err != nil {
 				fmt.Errorf("Bucket(%q).Objects: %v", bucket, err)
+				continue
 			}
+			
 			cm <- attrs
 		}
 	}()
@@ -129,6 +131,7 @@ func main() {
 }
 
 func worker(ctx context.Context, filename string, bucketname string) {
+
 	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
 	// 	msg.Ack()
 	// 	return
@@ -161,7 +164,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 	}
-	fmt.Println(g.FileName)
+
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		err := sr.StockandSalesParser(g, reader)

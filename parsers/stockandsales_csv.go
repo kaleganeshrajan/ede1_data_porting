@@ -53,13 +53,13 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			records.DistributorCode = strings.TrimSpace(lineSlice[headers.Stockist_Code])
 
 			cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.From_Date]))
-			if err != nil {
+			if err != nil ||cm.FromDate==nil{
 				log.Printf("stockandsales_csv From Date Error: %v : %v", err, lineSlice[headers.From_Date])
 			} else {
 				records.FromDate = cm.FromDate.Format("2006-01-02")
 			}
 			cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.To_Date]))
-			if err != nil {
+			if err != nil||cm.ToDate==nil {
 				log.Printf("stockandsales_csv To Date Error: %v : %v", err, lineSlice[headers.To_Date])
 			} else {
 				records.ToDate = cm.ToDate.Format("2006-01-02")

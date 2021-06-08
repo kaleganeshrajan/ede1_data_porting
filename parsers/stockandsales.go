@@ -16,7 +16,7 @@ import (
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
 func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	//log.Printf("Starting file parse: %v", g.FilePath)
+	log.Printf("Starting file parse: %v", g.FilePath)
 
 	var fd ut.FileDetail
 	var stockandsalesRecords md.Record
@@ -51,7 +51,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			invoicRrecords.DistributorCode = stockandsalesRecords.DistributorCode
 
 			cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
-			if err != nil {
+			if err != nil || cm.FromDate == nil {
 				log.Printf("stockandsales From Date Error: %v : %v", err, lineSlice[hd.From_Date])
 			} else {
 				stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
@@ -59,7 +59,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 				invoicRrecords.FromDate = stockandsalesRecords.FromDate
 			}
 			cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
-			if err != nil {
+			if err != nil || cm.ToDate == nil {
 				log.Printf("stockandsales To Date Error: %v : %v", err, lineSlice[hd.To_Date])
 			} else {
 				stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
@@ -215,8 +215,8 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	tempItem.Batch_number = strings.TrimSpace(lineSlice[hd.H2_BatchNumber])
 
 	ExpiryDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
-	if err != nil {
-		log.Printf("stockandsales Expiry Date Error: %v : %v", err, lineSlice[hd.H2_ExpiryDate])
+	if err != nil || ExpiryDate == nil {
+		log.Printf("stockandsales Expiry Date Error: %v : %v\n", err, lineSlice[hd.H2_ExpiryDate])
 	} else {
 		tempItem.Expiry_date = ExpiryDate.Format("2006-01-02")
 	}
@@ -228,7 +228,7 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	tempItem.Invoice_Number = lineSlice[hd.H3_Invoice_Number]
 	InvoiceDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
-	if err != nil {
+	if err != nil||InvoiceDate==nil {
 		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
 	} else {
 		tempItem.Invoice_Date = InvoiceDate.Format("2006-01-02")

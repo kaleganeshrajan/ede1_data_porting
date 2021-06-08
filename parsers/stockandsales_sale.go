@@ -184,13 +184,13 @@ func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempIte
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice.ACODE)
 
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice.FROM_DATE))
-	if err != nil {
+	if err != nil ||cm.FromDate==nil{
 		log.Printf("stockandsales_sale From Date Error: %v : %v", err, lineSlice.FROM_DATE)
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice.TO_DATE))
-	if err != nil {
+	if err != nil||cm.ToDate ==nil{
 		log.Printf("stockandsales_sale To Date Error: %v : %v", err, lineSlice.TO_DATE)
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")

@@ -91,13 +91,13 @@ func assignItems(lineSlice []string) (recordsDist md.RecordDist) {
 	recordsDist.StateName = strings.TrimSpace(lineSlice[hd.StateName])
 
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.DFromDate]))
-	if err != nil {
+	if err != nil ||cm.FromDate==nil{
 		log.Printf("stockandsales_dist From Date Error: %v : %v", err, lineSlice[hd.DFromDate])
 	} else {
 		recordsDist.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.DToDate]))
-	if err != nil {
+	if err != nil||cm.ToDate==nil {
 		log.Printf("stockandsales_dist To Date Error: %v : %v", err, lineSlice[hd.DToDate])
 	} else {
 		recordsDist.ToDate = cm.ToDate.Format("2006-01-02")

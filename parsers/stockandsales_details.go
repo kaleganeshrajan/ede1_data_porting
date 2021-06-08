@@ -102,13 +102,13 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
-	if err != nil {
+	if err != nil || cm.FromDate==nil {
 		log.Printf("stockandsales_details From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
-	if err != nil {
+	if err != nil||cm.ToDate==nil {
 		log.Printf("stockandsales_details To Date Error: %v : %v", err, lineSlice[hd.Todate])
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
