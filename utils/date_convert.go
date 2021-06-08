@@ -62,6 +62,7 @@ func init() {
 	DateFormatMap["dd/MM/yy HH:mm:ss"] = "02/01/06 15:04:05"
 	DateFormatMap["ddMMyyyy"] = "02012006"
 	DateFormatMap["MMyy"] = "0106"
+	DateFormatMap["MM/yy"] = "01/06"
 	DateFormatMap["MMddyy"] = "010206"
 	DateFormatMap["ddMM/yy"] = "0201/06"
 }
