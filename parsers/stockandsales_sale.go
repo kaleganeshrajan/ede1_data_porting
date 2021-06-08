@@ -41,7 +41,7 @@ func StockandSalesSale(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	flag := 1
 	seperator := "\x10"
 	for {
-		line, err := reader.ReadString('\r')
+		line, err := reader.ReadString('\n')
 
 		if err != nil && err == io.EOF {
 			break
