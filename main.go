@@ -18,15 +18,15 @@ import (
 	"google.golang.org/api/iterator"
 
 	"cloud.google.com/go/storage"
-	cr "github.com/brkelkar/common_utils/configreader"
+	//cr "github.com/brkelkar/common_utils/configreader"
 	
 )
 
 var (
-	cfg           cr.Config
+	//cfg           cr.Config
 	gcsFileAttr   utils.GcsFile
-	awacsSubNames []string
-	projectID     string
+	//awacsSubNames []string
+	//projectID     string
 	maxGoroutines int64
 )
 
@@ -40,18 +40,18 @@ type BukectStruct struct {
 }
 
 func init() {
-	awacsSubNames = []string{"awacs-ede1-test-sub"}
-	projectID = "awacs-dev"
+	//awacsSubNames = []string{"awacs-ede1-test-sub"}
+	//projectID = "awacs-dev"
 	maxGoroutines = 5
 }
 
 func main() {
 
-	bucket := "awacs-monthlydata" //awacs-monthlydata //awacs-mtd
+	bucket := "awacs-mtd" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		fmt.Errorf("storage.NewClient: %v", err)
+		fmt.Printf("storage.NewClient: %v", err)
 	}
 	defer client.Close()
 
@@ -69,7 +69,7 @@ func main() {
 				return
 			}
 			if err != nil {
-				fmt.Errorf("Bucket(%q).Objects: %v", bucket, err)
+				fmt.Printf("Bucket(%q).Objects: %v", bucket, err)
 				continue
 			}
 

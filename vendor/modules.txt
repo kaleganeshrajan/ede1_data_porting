@@ -15,11 +15,6 @@ cloud.google.com/go/bigquery
 # cloud.google.com/go/storage v1.15.0
 ## explicit
 cloud.google.com/go/storage
-# github.com/brkelkar/common_utils v0.0.0-20210331064651-f5063409857c
-## explicit
-github.com/brkelkar/common_utils/configreader
-github.com/brkelkar/common_utils/gcsbucketclient
-github.com/brkelkar/common_utils/logger
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.2
@@ -39,6 +34,8 @@ github.com/googleapis/gax-go/v2
 github.com/jstemmer/go-junit-report
 github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
+# github.com/pkg/errors v0.9.1
+## explicit
 # go.opencensus.io v0.23.0
 go.opencensus.io
 go.opencensus.io/internal
@@ -230,4 +227,6 @@ google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/pluginpb
 # gopkg.in/yaml.v2 v2.2.8
-gopkg.in/yaml.v2
+## explicit
+# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+## explicit

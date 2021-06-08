@@ -6,6 +6,7 @@ import (
 	md "ede_porting/models"
 	ut "ede_porting/utils"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -29,6 +30,7 @@ func StockandSalesDetails(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	seperator := "\x10"
 	for {
 		line, err := reader.ReadString('\n')
+		fmt.Println(line)
 		if err != nil && err == io.EOF {
 			break
 		}
