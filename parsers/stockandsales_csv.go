@@ -5,18 +5,18 @@ import (
 	"ede_porting/headers"
 	"ede_porting/models"
 	"ede_porting/utils"
+	"errors"
 	"io"
 	"log"
+	"strconv"
 	"strings"
 	"time"
-
-	cr "github.com/brkelkar/common_utils/configreader"
 )
 
 //StockandSalesParser parse stock and sales with PTR and without PTR
-func StockandSalesCSVParser(g utils.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
+func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)
+	//log.Printf("Starting file parse: %v", g.FilePath)
 
 	var records models.Record
 	cMap := make(map[string]models.Company)
@@ -51,10 +51,19 @@ func StockandSalesCSVParser(g utils.GcsFile, cfg cr.Config, reader *bufio.Reader
 		switch lineSlice[0] {
 		case "H":
 			records.DistributorCode = strings.TrimSpace(lineSlice[headers.Stockist_Code])
-			cm.FromDate, _ = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.From_Date]))
-			records.FromDate = cm.FromDate.Format("2006-01-02")
-			cm.ToDate, _ = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.To_Date]))
-			records.ToDate = cm.ToDate.Format("2006-01-02")
+
+			cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.From_Date]))
+			if err != nil {
+				log.Printf("stockandsales_csv From Date Error: %v : %v", err, lineSlice[headers.From_Date])
+			} else {
+				records.FromDate = cm.FromDate.Format("2006-01-02")
+			}
+			cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.To_Date]))
+			if err != nil {
+				log.Printf("stockandsales_csv To Date Error: %v : %v", err, lineSlice[headers.To_Date])
+			} else {
+				records.ToDate = cm.ToDate.Format("2006-01-02")
+			}
 		case "T":
 			SS_count = SS_count + 1
 			tempItem := AssignItem(lineSlice)
@@ -83,18 +92,21 @@ func StockandSalesCSVParser(g utils.GcsFile, cfg cr.Config, reader *bufio.Reader
 		if err != nil {
 			return err
 		}
+
+		fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
+			0, int64(time.Since(startTime)/1000000), headers.File_details)
+		if err != nil {
+			return err
+		}
+
+		g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
+		//log.Printf("File parsing done: %v", g.FilePath)
+
+		g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
+	} else {
+		return errors.New("file is empty")
 	}
 
-	fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
-		0, int64(time.Since(startTime)/1000000), headers.File_details)
-	if err != nil {
-		return err
-	}
-
-	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
-	log.Printf("File parsing done: %v", g.FilePath)
-
-	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 	//g.LogFileDetails(true)
 	return nil
 }
@@ -106,15 +118,15 @@ func AssignItem(lineSlice []string) (tempItem models.Item) {
 	tempItem.Item_name = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
 	tempItem.Pack = strings.TrimSpace(lineSlice[headers.Csv_Pack])
 	if len(lineSlice) >= 16 {
-		tempItem.PTR = strings.TrimSpace(lineSlice[headers.Csv_PTR])
+		tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_PTR]), 64)
 		PTRLength = 1
 	}
-	tempItem.Opening_stock = strings.TrimSpace(lineSlice[headers.Csv_Opening_Qty+PTRLength])
-	tempItem.Purchases_Reciepts = strings.TrimSpace(lineSlice[headers.Csv_Receipts_Qty+PTRLength])
-	tempItem.Sales_qty = strings.TrimSpace(lineSlice[headers.Csv_Sales_Qty+PTRLength])
-	tempItem.Sales_return = strings.TrimSpace(lineSlice[headers.Csv_Sales_Ret_Qty+PTRLength])
-	tempItem.Purchase_return = strings.TrimSpace(lineSlice[headers.Csv_Purch_Ret_Qty+PTRLength])
-	tempItem.Adjustments = strings.TrimSpace(lineSlice[headers.Csv_Adjustments_Qty+PTRLength])
-	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[headers.Csv_ClosingQty+PTRLength])
+	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Opening_Qty+PTRLength]), 64)
+	tempItem.Purchases_Reciepts, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Receipts_Qty+PTRLength]), 64)
+	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Sales_Qty+PTRLength]), 64)
+	tempItem.Sales_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Sales_Ret_Qty+PTRLength]), 64)
+	tempItem.Purchase_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Purch_Ret_Qty+PTRLength]), 64)
+	tempItem.Adjustments, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Adjustments_Qty+PTRLength]), 64)
+	tempItem.Closing_Stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_ClosingQty+PTRLength]), 64)
 	return tempItem
 }

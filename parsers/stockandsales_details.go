@@ -8,15 +8,14 @@ import (
 	"errors"
 	"io"
 	"log"
+	"strconv"
 	"strings"
 	"time"
-
-	cr "github.com/brkelkar/common_utils/configreader"
 )
 
-func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
+func StockandSalesDetails(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)
+	//log.Printf("Starting file parse: %v", g.FilePath)
 
 	cMap := make(map[string]md.Company)
 
@@ -82,15 +81,17 @@ func StockandSalesDetails(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (er
 		if err != nil {
 			return err
 		}
+
+		fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, 0, 0, int64(time.Since(startTime)/1000000), hd.File_details)
+
+		g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
+		//log.Printf("File parsing done: %v", g.FilePath)
+
+		g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
+		//g.LogFileDetails(true)
+	} else {
+		return errors.New("file is empty")
 	}
-
-	fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, 0, 0, int64(time.Since(startTime)/1000000), hd.File_details)
-
-	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
-	log.Printf("File parsing done: %v", g.FilePath)
-
-	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
-	//g.LogFileDetails(true)
 
 	return nil
 }
@@ -102,26 +103,26 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	if err != nil {
-		log.Printf("CM From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
+		log.Printf("stockandsales_details From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
 	if err != nil {
-		log.Printf("CM To Date Error: %v : %v", err, lineSlice[hd.Todate])
+		log.Printf("stockandsales_details To Date Error: %v : %v", err, lineSlice[hd.Todate])
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
-	tempItem.PTR = strings.TrimSpace(lineSlice[hd.StandardPTR])
-	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.OpeingUnits])
-	tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.SalesUnits])
-	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.ClosingUnits])
-	tempItem.PurchaseVal = strings.TrimSpace(lineSlice[hd.PurchaseUnits])
-	tempItem.Purchase_return = strings.TrimSpace(lineSlice[hd.PurchaseReturn])
-	tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.SalesReturn])
-	tempItem.PurchaseFree = strings.TrimSpace(lineSlice[hd.PurchaseFree])
-	tempItem.SalesFree = strings.TrimSpace(lineSlice[hd.SalesFree])
+	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.StandardPTR]), 64)
+	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.OpeingUnits]), 64)
+	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesUnits]), 64)
+	tempItem.Closing_Stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.ClosingUnits]), 64)
+	tempItem.PurchaseVal, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseUnits]), 64)
+	tempItem.Purchase_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseReturn]), 64)
+	tempItem.Sales_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesReturn]), 64)
+	tempItem.PurchaseFree, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseFree]), 64)
+	tempItem.SalesFree, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesFree]), 64)
 
 	return tempItem
 }

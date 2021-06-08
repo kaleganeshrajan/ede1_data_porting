@@ -5,18 +5,18 @@ import (
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	ut "ede_porting/utils"
+	"errors"
 	"io"
 	"log"
+	"strconv"
 	"strings"
 	"time"
-
-	cr "github.com/brkelkar/common_utils/configreader"
 )
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err error) {
+func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)
+	//log.Printf("Starting file parse: %v", g.FilePath)
 
 	var fd ut.FileDetail
 	var stockandsalesRecords md.Record
@@ -49,14 +49,23 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err
 			stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockist_Code])
 			batchRecords.DistributorCode = stockandsalesRecords.DistributorCode
 			invoicRrecords.DistributorCode = stockandsalesRecords.DistributorCode
-			cm.FromDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
-			stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
-			batchRecords.FromDate = stockandsalesRecords.FromDate
-			invoicRrecords.FromDate = stockandsalesRecords.FromDate
-			cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
-			stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
-			batchRecords.ToDate = stockandsalesRecords.ToDate
-			invoicRrecords.ToDate = stockandsalesRecords.ToDate
+
+			cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
+			if err != nil {
+				log.Printf("stockandsales From Date Error: %v : %v", err, lineSlice[hd.From_Date])
+			} else {
+				stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
+				batchRecords.FromDate = stockandsalesRecords.FromDate
+				invoicRrecords.FromDate = stockandsalesRecords.FromDate
+			}
+			cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
+			if err != nil {
+				log.Printf("stockandsales To Date Error: %v : %v", err, lineSlice[hd.To_Date])
+			} else {
+				stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
+				batchRecords.ToDate = stockandsalesRecords.ToDate
+				invoicRrecords.ToDate = stockandsalesRecords.ToDate
+			}
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 		case "T1":
 			SS_count = SS_count + 1
@@ -124,14 +133,18 @@ func StockandSalesParser(g ut.GcsFile, cfg cr.Config, reader *bufio.Reader) (err
 		}
 	}
 
-	fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, len(batchRecords.Batches),
-		INV_Count, int64(time.Since(startTime)/1000000), hd.File_details)
+	if len(cMap) > 0 {
+		fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, len(batchRecords.Batches),
+			INV_Count, int64(time.Since(startTime)/1000000), hd.File_details)
 
-	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
-	log.Printf("File parsing done: %v", g.FilePath)
+		g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
+		//log.Printf("File parsing done: %v", g.FilePath)
 
-	g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
-	//g.LogFileDetails(true)
+		g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
+		//g.LogFileDetails(true)
+	} else {
+		return errors.New("file is empty")
+	}
 	return err
 }
 
@@ -165,32 +178,32 @@ func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Item_name])
 	tempItem.Pack = strings.TrimSpace(lineSlice[hd.PACK])
 	tempItem.UPC = strings.TrimSpace(lineSlice[hd.UPC])
-	tempItem.PTR = strings.TrimSpace(lineSlice[hd.PTR])
+	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PTR]), 64)
 	if len(lineSlice) >= 24 {
-		tempItem.PTS = strings.TrimSpace(lineSlice[hd.PTS])
+		tempItem.PTS, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PTS]), 64)
 		PTSLength = 1
 	}
-	tempItem.MRP = strings.TrimSpace(lineSlice[hd.MRP+PTSLength])
-	tempItem.Opening_stock = strings.TrimSpace(lineSlice[hd.Opening_stock+PTSLength])
-	tempItem.Sales_qty = strings.TrimSpace(lineSlice[hd.Sales_Qty+PTSLength])
-	tempItem.Bonus_qty = strings.TrimSpace(lineSlice[hd.Bonus_qty+PTSLength])
-	tempItem.Sales_return = strings.TrimSpace(lineSlice[hd.Sales_Return+PTSLength])
-	tempItem.Expiry_in = strings.TrimSpace(lineSlice[hd.Expiry_In+PTSLength])
-	tempItem.Discount_percentage = strings.TrimSpace(lineSlice[hd.Discount_percentage+PTSLength])
-	tempItem.Discount_amount = strings.TrimSpace(lineSlice[hd.Discount_amount+PTSLength])
-	tempItem.Sale_tax = strings.TrimSpace(lineSlice[hd.Sale_tax+PTSLength])
-	tempItem.Purchases_Reciepts = strings.TrimSpace(lineSlice[hd.Purchases_Reciepts+PTSLength])
-	tempItem.Purchase_return = strings.TrimSpace(lineSlice[hd.Purchase_return+PTSLength])
-	tempItem.Expiry_out = strings.TrimSpace(lineSlice[hd.Expiry_out+PTSLength])
-	tempItem.Adjustments = strings.TrimSpace(lineSlice[hd.Adjustments+PTSLength])
-	tempItem.Closing_Stock = strings.TrimSpace(lineSlice[hd.Closing_Stock+PTSLength])
+	tempItem.MRP, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.MRP+PTSLength]), 64)
+	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Opening_stock+PTSLength]), 64)
+	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Sales_Qty+PTSLength]), 64)
+	tempItem.Bonus_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Bonus_qty+PTSLength]), 64)
+	tempItem.Sales_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Sales_Return+PTSLength]), 64)
+	tempItem.Expiry_in, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Expiry_In+PTSLength]), 64)
+	tempItem.Discount_percentage, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Discount_percentage+PTSLength]), 64)
+	tempItem.Discount_amount, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Discount_amount+PTSLength]), 64)
+	tempItem.Sale_tax, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Sale_tax+PTSLength]), 64)
+	tempItem.Purchases_Reciepts, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Purchases_Reciepts+PTSLength]), 64)
+	tempItem.Purchase_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Purchase_return+PTSLength]), 64)
+	tempItem.Expiry_out, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Expiry_out+PTSLength]), 64)
+	tempItem.Adjustments, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Adjustments+PTSLength]), 64)
+	tempItem.Closing_Stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Closing_Stock+PTSLength]), 64)
 	if len(lineSlice) >= 29 {
 		PTSLength = 1
-		tempItem.InstaSales = strings.TrimSpace(lineSlice[hd.InstaSales+PTSLength])
-		tempItem.OpenVal = strings.TrimSpace(lineSlice[hd.OpenVal+PTSLength])
-		tempItem.PurchaseVal = strings.TrimSpace(lineSlice[hd.PurchaseVal+PTSLength])
-		tempItem.SalesVal = strings.TrimSpace(lineSlice[hd.SalesVal+PTSLength])
-		tempItem.CloseVal = strings.TrimSpace(lineSlice[hd.CloseVal+PTSLength])
+		tempItem.InstaSales, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.InstaSales+PTSLength]), 64)
+		tempItem.OpenVal, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.OpenVal+PTSLength]), 64)
+		tempItem.PurchaseVal, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseVal+PTSLength]), 64)
+		tempItem.SalesVal, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesVal+PTSLength]), 64)
+		tempItem.CloseVal, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.CloseVal+PTSLength]), 64)
 	}
 	return tempItem
 }

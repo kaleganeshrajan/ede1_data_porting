@@ -5,18 +5,19 @@ import (
 	"context"
 	"ede_porting/headers"
 	"ede_porting/models"
-	"ede_porting/parsers"
+	sr "ede_porting/parsers"
 	"ede_porting/utils"
-	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 
-	"cloud.google.com/go/pubsub"
+	"google.golang.org/api/iterator"
+
+	"cloud.google.com/go/storage"
 	cr "github.com/brkelkar/common_utils/configreader"
 )
 
@@ -44,73 +45,110 @@ func init() {
 }
 
 func main() {
+
+	bucket := "awacs-monthlydata"
 	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, projectID)
+	client, err := storage.NewClient(ctx)
 	if err != nil {
-		log.Printf("Error while recieving Message: %v", err)
+		fmt.Errorf("storage.NewClient: %v", err)
 	}
 	defer client.Close()
-	var awacsSubscriptions []*pubsub.Subscription
 
-	for _, name := range awacsSubNames {
-		awacsSubscriptions = append(awacsSubscriptions, client.Subscription(name))
-	}
+	// ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	// defer cancel()
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	// Create a channel to handle messages to as they come in.
-	cm := make(chan *pubsub.Message)
-
-	defer close(cm)
 	guard := make(chan struct{}, maxGoroutines)
-	log.Println("Starting go routines")
-	for _, sub := range awacsSubscriptions {
-		go func(sub *pubsub.Subscription) {
-			// Receive blocks until the context is cancelled or an error occurs.
-			err = sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-				cm <- msg
-			})
-			if err != nil {
-				log.Printf("Subscription error := %v", err)
+	cm := make(chan *storage.ObjectAttrs)
+
+	go func() {
+		it := client.Bucket(bucket).Objects(ctx, nil)
+		for {
+			attrs, err := it.Next()
+			if err == iterator.Done {
+				return
 			}
-		}(sub)
-	}
-	log.Println("Starting go Message reader")
+			if err != nil {
+				fmt.Errorf("Bucket(%q).Objects: %v", bucket, err)
+			}
+			cm <- attrs
+		}
+	}()
+
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
-		go func(ctx context.Context, msg pubsub.Message) {
-			//msg.Ack()
-			time.Sleep(5 * time.Millisecond)
-			worker(ctx, msg)
+		go func(ctx context.Context) {
+			//fmt.Println(msg.Name)
+			worker(ctx, msg.Name, bucket)
 			<-guard
-		}(ctx, *msg)
+		}(ctx)
 	}
+
+	//ctx := context.Background()
+	// //client, err := pubsub.NewClient(ctx, projectID)
+	// if err != nil {
+	// 	log.Printf("Error while recieving Message: %v", err)
+	// }
+	// defer client.Close()
+	// var awacsSubscriptions []*pubsub.Subscription
+
+	// for _, name := range awacsSubNames {
+	// 	awacsSubscriptions = append(awacsSubscriptions, client.Subscription(name))
+	// }
+
+	// ctx, cancel := context.WithCancel(ctx)
+	// defer cancel()
+
+	// Create a channel to handle messages to as they come in.
+	// cm := make(chan *pubsub.Message)
+
+	// defer close(cm)
+	// guard := make(chan struct{}, maxGoroutines)
+	// log.Println("Starting go routines")
+	// for _, sub := range awacsSubscriptions {
+	// 	go func(sub *pubsub.Subscription) {
+	// 		// Receive blocks until the context is cancelled or an error occurs.
+	// 		err = sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+	// 			cm <- msg
+	// 		})
+	// 		if err != nil {
+	// 			log.Printf("Subscription error := %v", err)
+	// 		}
+	// 	}(sub)
+	// }
+
+	// log.Println("Starting go Message reader")
+	// for msg := range cm {
+	// 	guard <- struct{}{} // would block if guard channel is already filled
+	// 	go func(ctx context.Context, msg pubsub.Message) {
+	// 		//msg.Ack()
+	// 		time.Sleep(5 * time.Millisecond)
+	// 		worker(ctx, msg)
+	// 		<-guard
+	// 	}(ctx, *msg)
+	// }
 }
 
-func worker(ctx context.Context, msg pubsub.Message) {
-	if msg.Attributes["eventType"] == "OBJECT_DELETE" {
-		msg.Ack()
-		return
-	}
-	log.Printf("Start Message ID: %v ObjectCreation: %v ObjectID: %v", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
+func worker(ctx context.Context, filename string, bucketname string) {
+	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
+	// 	msg.Ack()
+	// 	return
+	// }
+	//log.Printf("Start Message ID: %v ObjectCreation: %v ObjectID: %v", msg.ID, msg.Attributes["objectGeneration"], msg.Attributes["objectId"])
 	//defer ackMessgae(msg)
-	var bucketDetails BukectStruct
-	json.Unmarshal(msg.Data, &bucketDetails)
+	//var bucketDetails BukectStruct
+	//json.Unmarshal(msg.Data, &bucketDetails)
 	var e models.GCSEvent
-	e.Bucket = bucketDetails.Bucket
-	e.Name = bucketDetails.Name
-	e.Updated = bucketDetails.Updated
-	e.Size = bucketDetails.Size
+	e.Bucket = bucketname
+	e.Name = filename
+	e.Updated = time.Now()
+	e.Size = "10"
 
-	var mu sync.Mutex
-	var ef utils.ErrorFileDetail
-	mu.Lock()
 	g := *gcsFileAttr.HandleGCSEvent(ctx, e)
 	if !g.GcsClient.GetLastStatus() {
 		return
 	}
-	mu.Unlock()
+
+	var ef utils.ErrorFileDetail
 	var r io.Reader
 	var reader *bufio.Reader
 	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
@@ -123,18 +161,17 @@ func worker(ctx context.Context, msg pubsub.Message) {
 			return
 		}
 	}
-
+	fmt.Println(g.FileName)
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
-		msg.Ack()
-		err := parsers.StockandSalesParser(g, cfg, reader)
+		err := sr.StockandSalesParser(g, reader)
 		if err != nil {
 			ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "CSV"):
-		msg.Ack()
-		err := parsers.StockandSalesCSVParser(g, cfg, reader)
+		//log.Printf("File Start :-%v\n", g.FileName)
+		err := sr.StockandSalesCSVParser(g, reader)
 		if err != nil {
 			ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 			log.Println(err)
@@ -145,10 +182,15 @@ func worker(ctx context.Context, msg pubsub.Message) {
 		temp := strings.Split(g.FilePath, "/")
 
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
-		log.Println(script, "-p", fileName, "-d", outPutFile)
+		//log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
-		cmd.Run()
+		err := cmd.Run()
+		if err != nil {
+			ef.ErrorFileDetails(g.FilePath, "Error while running command", headers.Error_File_details, g)
+			log.Printf("Error while running command : %v\n", err.Error())
+			return
+		}
 		fd, err := os.Open(outPutFile)
 		defer os.Remove(outPutFile)
 		if err != nil {
@@ -163,23 +205,23 @@ func worker(ctx context.Context, msg pubsub.Message) {
 			log.Println("error while getting reader")
 			return
 		}
-		msg.Ack()
+
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			err := parsers.StockandSalesSale(g, cfg, reader)
+			err := sr.StockandSalesSale(g, reader)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
-			err := parsers.StockandSalesDetails(g, cfg, reader)
+			err := sr.StockandSalesDetails(g, reader)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else {
-			err := parsers.StockandSalesDits(g, cfg, reader)
+			err := sr.StockandSalesDits(g, reader)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
@@ -187,18 +229,19 @@ func worker(ctx context.Context, msg pubsub.Message) {
 			}
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
-		msg.Ack()
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			err := parsers.StockandSalesSale(g, cfg, reader)
+			err := sr.StockandSalesSale(g, reader)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
+				return
 			}
 		} else {
-			err := parsers.StockandSalesDits(g, cfg, reader)
+			err := sr.StockandSalesDits(g, reader)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
+				return
 			}
 		}
 	}

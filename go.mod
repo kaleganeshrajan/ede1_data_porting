@@ -9,4 +9,5 @@ require (
 	github.com/brkelkar/common_utils v0.0.0-20210331064651-f5063409857c
 	github.com/google/uuid v1.2.0
 	go.uber.org/zap v1.16.0
+	google.golang.org/api v0.46.0
 )

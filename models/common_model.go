@@ -9,3 +9,4 @@ type Common struct {
 	ExpiryDate   *time.Time
 	StockistCode string
 }
+

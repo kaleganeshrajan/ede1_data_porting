@@ -46,3 +46,23 @@ type RecordDist struct {
 	CityName         string `json:"CityName"`
 	CreationDatetime string `json:"CreationDatetime"`
 }
+
+type SaleDist struct {
+	ITEM_CODE string
+	ITEM_NAME string
+	MANU_CODE string
+	MANU_NAME string
+	SALE_QTY  string
+	BON_QTY   string
+	DIS_PERC  string
+	DIS_AMT   string
+	SPR_PTR   string
+	STAX_PERC string
+	SRET_QTY  string
+	PACK_SIZE string
+	ACODE     string
+	OP_BAL    string
+	CL_BAL    string
+	FROM_DATE string
+	TO_DATE   string
+}
