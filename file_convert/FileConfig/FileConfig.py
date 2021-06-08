@@ -3,10 +3,11 @@ from datetime import datetime
 from BucketHandler import BucketCon
 import os
 import pandas as pd
-from simpledbf import Dbf5
+from dbfread import DBF
 
 
 seperator = chr(0x10)
+
 
 class FileConfig:
 
@@ -110,12 +111,13 @@ class FileConfig:
             self._awacslogger.info(
                 self.fileType + " File type Identified: " + self.fileName + self.fileType)
             # initializing the class
-            parser = XLS(self._awacslogger)
+            parser = XLSParser(self._awacslogger)
         elif self.fileType == '.DBF' or self.fileType == '.dbf':
             self._awacslogger.info(
                 self.fileType + " File type Identified: " + self.fileName + self.fileType)
             # initializing the class
-            parser = DBF(self._awacslogger, self.tempfile + self.fileName)
+            parser = DBFParser(self._awacslogger,
+                               self.tempfile + self.fileName)
         else:
             parser = None
             self._awacslogger.error("File not found or Invalid file type.")
@@ -206,7 +208,7 @@ class Builder:
 
 
 # XLS builder class
-class XLS(Builder):
+class XLSParser(Builder):
 
     def __init__(self, awacslogger) -> None:
         self._awacslogger = awacslogger
@@ -222,7 +224,7 @@ class XLS(Builder):
 
 
 # DBF builder class
-class DBF(Builder):
+class DBFParser(Builder):
 
     def __init__(self, awacslogger, tempFile) -> None:
         self._awacslogger = awacslogger
@@ -231,9 +233,11 @@ class DBF(Builder):
     # File conversion from dbf to csv
     def convert(self, blob):
         try:
+            dataDict = []
             blob.download_to_filename(self.__tempfile + '.DBF')
-            dbf = Dbf5(self.__tempfile + '.DBF', codec='utf-8')
-            df = dbf.to_dataframe()
+            for row in DBF(self.__tempfile + '.DBF', encoding='cp858'):
+                dataDict.append(row)
+            df = pd.DataFrame.from_records(dataDict)
             return df
         except Exception as e:
             self._awacslogger.error("Data porting for .dbf failed:" + str(e))
