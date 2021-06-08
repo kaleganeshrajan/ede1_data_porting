@@ -33,7 +33,8 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	INV_Count := 0
 
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.ReadString('\r')
+
 		if err != nil && err == io.EOF {
 			break
 		}
@@ -228,7 +229,7 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	tempItem.Invoice_Number = lineSlice[hd.H3_Invoice_Number]
 	InvoiceDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
-	if err != nil||InvoiceDate==nil {
+	if err != nil || InvoiceDate == nil {
 		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
 	} else {
 		tempItem.Invoice_Date = InvoiceDate.Format("2006-01-02")

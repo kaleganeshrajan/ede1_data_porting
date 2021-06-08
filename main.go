@@ -46,7 +46,7 @@ func init() {
 
 func main() {
 
-	bucket := "awacs-monthlydata"// //awacs-mtd
+	bucket := "awacs-monthlydata" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -71,7 +71,7 @@ func main() {
 				fmt.Errorf("Bucket(%q).Objects: %v", bucket, err)
 				continue
 			}
-			
+
 			cm <- attrs
 		}
 	}()
