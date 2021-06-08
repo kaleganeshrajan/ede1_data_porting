@@ -6,7 +6,6 @@ import (
 	md "ede_porting/models"
 	ut "ede_porting/utils"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -30,7 +29,7 @@ func StockandSalesDetails(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	seperator := "\x10"
 	for {
 		line, err := reader.ReadString('\n')
-		fmt.Println(line)
+		//fmt.Println(line)
 		if err != nil && err == io.EOF {
 			break
 		}
@@ -104,13 +103,13 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
-	if err != nil || cm.FromDate==nil {
+	if err != nil || cm.FromDate == nil {
 		log.Printf("stockandsales_details From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
-	if err != nil||cm.ToDate==nil {
+	if err != nil || cm.ToDate == nil {
 		log.Printf("stockandsales_details To Date Error: %v : %v", err, lineSlice[hd.Todate])
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")

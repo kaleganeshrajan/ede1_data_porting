@@ -47,7 +47,7 @@ func init() {
 
 func main() {
 
-	bucket := "awacs-mtd" //awacs-monthlydata //awacs-mtd
+	bucket := "awacs-monthlydata" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
