@@ -8,9 +8,9 @@ COPY . .
 # Install the package
 RUN go build -tags=jsoniter .
 
+RUN apt-get update && apt-get -y install python3
 
-RUN  apt-get update -y
-RUN  apt-get --assume-yes install -y python3
+ 
 RUN  apt install --assume-yes  python3-pip
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --user virtualenv
 RUN pip3 install markdown-readme-generator
