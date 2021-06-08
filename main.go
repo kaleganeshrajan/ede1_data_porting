@@ -42,7 +42,7 @@ type BukectStruct struct {
 func init() {
 	awacsSubNames = []string{"awacs-ede1-test-sub"}
 	projectID = "awacs-dev"
-	maxGoroutines = 10
+	maxGoroutines = 5
 }
 
 func main() {
