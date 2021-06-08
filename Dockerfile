@@ -9,12 +9,13 @@ COPY . .
 # Install the package
 RUN go build -tags=jsoniter .
 
-
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --user virtualenv
 RUN  apt-get update -y
 RUN  apt-get --assume-yes install -y python3
 RUN  apt install --assume-yes  python3-pip
 RUN pip3 install markdown-readme-generator
 RUN  pip3 install -r ./file_convert/requirements.txt 
+
 
 # Run the executable
 CMD ["./ede_porting"]
