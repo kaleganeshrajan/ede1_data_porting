@@ -141,12 +141,12 @@ const (
 	Stockist
 )
 
-const(
-	AWACS_Patch_with_PTS int =iota
-	AWACS_Patch_without_PTS
-	CSV_1_0
-	CSV_1_1
-	Standard_Excel_Format
-	Standard_V4_Patch
-	Standard_V5_Patch
+const (
+	AWACS_Patch_with_PTS    = 1
+	AWACS_Patch_without_PTS = 2
+	CSV_1_0                 = 3
+	CSV_1_1                 = 4
+	Standard_Excel_Format   = 5
+	Standard_V4_Patch       = 6
+	Standard_V5_Patch       = 7
 )
