@@ -169,7 +169,14 @@ func StockandSalesSale(g ut.GcsFile, reader *bufio.Reader) (err error) {
 func assignHeaders(g ut.GcsFile, stockandsalesRecords *md.Record) {
 	stockandsalesRecords.Key = g.FileKey
 	stockandsalesRecords.FilePath = g.FilePath
-	stockandsalesRecords.FileType = g.FileType
+	if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V4 PATCH"){
+		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V4_Patch)
+	}else if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V5 PATCH"){
+		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V5_Patch)
+	}else{
+		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_Excel_Format)
+	}
+	
 	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		stockandsalesRecords.Duration = hd.DurationMTD

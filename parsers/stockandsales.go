@@ -158,9 +158,15 @@ func assignHeader(g ut.GcsFile, stockandsalesRecords *md.Record, batchRecords *m
 	batchRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	invoicRrecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 
-	stockandsalesRecords.FileType = g.FileType
-	batchRecords.FileType = g.FileType
-	invoicRrecords.FileType = g.FileType
+	if strings.Contains(strings.ToUpper(g.FilePath), "AWACS PATCH 2010 WITH PTS") {
+		stockandsalesRecords.FileType = strconv.Itoa(hd.AWACS_Patch_with_PTS)
+		batchRecords.FileType = strconv.Itoa(hd.AWACS_Patch_with_PTS)
+		invoicRrecords.FileType = strconv.Itoa(hd.AWACS_Patch_with_PTS)
+	} else {
+		stockandsalesRecords.FileType = strconv.Itoa(hd.AWACS_Patch_without_PTS)
+		batchRecords.FileType = strconv.Itoa(hd.AWACS_Patch_without_PTS)
+		invoicRrecords.FileType = strconv.Itoa(hd.AWACS_Patch_without_PTS)
+	}
 
 	if strings.Contains(g.BucketName, "MTD") {
 		invoicRrecords.Duration = hd.DurationMTD

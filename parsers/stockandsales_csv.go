@@ -24,7 +24,12 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	var cm models.Common
 
 	records.FilePath = g.FilePath
-	records.FileType = g.FileType
+	if strings.Contains(strings.ToUpper(g.FilePath), "CSV 1.0") {
+		records.FileType = strconv.Itoa(headers.CSV_1_0)
+	} else {
+		records.FileType = strconv.Itoa(headers.CSV_1_1)
+	}
+
 	records.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		records.Duration = headers.DurationMTD
@@ -53,13 +58,13 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			records.DistributorCode = strings.TrimSpace(lineSlice[headers.Stockist_Code])
 
 			cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.From_Date]))
-			if err != nil ||cm.FromDate==nil{
+			if err != nil || cm.FromDate == nil {
 				log.Printf("stockandsales_csv From Date Error: %v : %v", err, lineSlice[headers.From_Date])
 			} else {
 				records.FromDate = cm.FromDate.Format("2006-01-02")
 			}
 			cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.To_Date]))
-			if err != nil||cm.ToDate==nil {
+			if err != nil || cm.ToDate == nil {
 				log.Printf("stockandsales_csv To Date Error: %v : %v", err, lineSlice[headers.To_Date])
 			} else {
 				records.ToDate = cm.ToDate.Format("2006-01-02")
