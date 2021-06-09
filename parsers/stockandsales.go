@@ -79,13 +79,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			}
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
 			t.Items = append(t.Items, tempItem)
-			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
-
-			if len(lineSlice) >= 24 {
-				stockandsalesRecords.FileType = g.FileType
-				batchRecords.FileType = g.FileType
-				invoicRrecords.FileType = g.FileType
-			}
+			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t			
 		case "T2":
 			tempItem := assignItemH2(lineSlice)
 			batchRecords.Batches = append(batchRecords.Batches, tempItem)

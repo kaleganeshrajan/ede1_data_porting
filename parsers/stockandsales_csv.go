@@ -23,6 +23,7 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	var fd utils.FileDetail
 	var cm models.Common
 
+	records.FilePath = g.FilePath
 	if strings.Contains(strings.ToUpper(g.FilePath), "CSV 1.0") {
 		records.FileType = strconv.Itoa(headers.CSV_1_0)
 	} else {
