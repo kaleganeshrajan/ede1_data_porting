@@ -73,7 +73,7 @@ func main() {
 				fmt.Printf("Bucket(%q).Objects: %v", bucket, err)
 				continue
 			}
-			log.Printf("Sending file : %v", attrs.Name)
+			log.Printf("Sending file : %v\n", attrs.Name)
 			cm <- attrs
 			mu.Unlock()
 		}
@@ -136,7 +136,7 @@ func main() {
 }
 
 func worker(ctx context.Context, filename string, bucketname string) {
-	log.Printf("Receved file : %v", filename)
+	log.Printf("Receved file : %v\n", filename)
 	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
 	// 	msg.Ack()
 	// 	return
