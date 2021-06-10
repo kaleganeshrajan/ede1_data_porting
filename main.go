@@ -60,11 +60,10 @@ func main() {
 
 	guard := make(chan struct{}, maxGoroutines)
 	cm := make(chan *storage.ObjectAttrs)
-	var mu sync.Mutex
+	
 	go func() {
 		it := client.Bucket(bucket).Objects(ctx, nil)
-		for {
-			mu.Lock()
+		for {			
 			attrs, err := it.Next()
 			if err == iterator.Done {
 				return
@@ -73,9 +72,9 @@ func main() {
 				fmt.Printf("Bucket(%q).Objects: %v", bucket, err)
 				continue
 			}
-			log.Printf("Sending file : %v\n", attrs.Name)
+			
 			cm <- attrs
-			mu.Unlock()
+			
 		}
 	}()
 	var mu1 sync.Mutex
@@ -84,6 +83,7 @@ func main() {
 		go func(ctx context.Context) {
 			//fmt.Println(msg.Name)
 			mu1.Lock()
+			log.Printf("Sending file : %v\n", msg.Name)
 			worker(ctx, msg.Name, bucket)
 			mu1.Unlock()
 			<-guard
