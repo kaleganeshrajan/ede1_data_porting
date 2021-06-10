@@ -14,8 +14,8 @@ import (
 )
 
 //GenerateJsonFile generate json file and insert to bigquery
-func GenerateJsonFile(invoicRrecords interface{}, tableName string) (err error) {
-	file, err := json.Marshal(invoicRrecords)
+func GenerateJsonFile(Rrecords interface{}, tableName string) (err error) {
+	file, err := json.Marshal(Rrecords)
 	if err != nil {
 		panic(err)
 	}

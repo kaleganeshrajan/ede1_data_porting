@@ -13,18 +13,18 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"google.golang.org/api/iterator"
 
 	"cloud.google.com/go/storage"
 	//cr "github.com/brkelkar/common_utils/configreader"
-	
 )
 
 var (
 	//cfg           cr.Config
-	gcsFileAttr   utils.GcsFile
+	gcsFileAttr utils.GcsFile
 	//awacsSubNames []string
 	//projectID     string
 	maxGoroutines int64
@@ -60,10 +60,11 @@ func main() {
 
 	guard := make(chan struct{}, maxGoroutines)
 	cm := make(chan *storage.ObjectAttrs)
-
+	var mu sync.Mutex
 	go func() {
 		it := client.Bucket(bucket).Objects(ctx, nil)
 		for {
+			mu.Lock()
 			attrs, err := it.Next()
 			if err == iterator.Done {
 				return
@@ -74,6 +75,7 @@ func main() {
 			}
 
 			cm <- attrs
+			mu.Unlock()
 		}
 	}()
 
