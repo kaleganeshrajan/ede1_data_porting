@@ -60,10 +60,10 @@ func main() {
 
 	guard := make(chan struct{}, maxGoroutines)
 	cm := make(chan *storage.ObjectAttrs)
-	
+
 	go func() {
 		it := client.Bucket(bucket).Objects(ctx, nil)
-		for {			
+		for {
 			attrs, err := it.Next()
 			if err == iterator.Done {
 				return
@@ -72,20 +72,18 @@ func main() {
 				fmt.Printf("Bucket(%q).Objects: %v", bucket, err)
 				continue
 			}
-			
+
 			cm <- attrs
-			
+
 		}
 	}()
-	var mu1 sync.Mutex
+
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
 		go func(ctx context.Context) {
 			//fmt.Println(msg.Name)
-			mu1.Lock()
-			log.Printf("Sending file : %v\n", msg.Name)
+			log.Printf("Sending file Goroutines : %v\n", msg.Name)
 			worker(ctx, msg.Name, bucket)
-			mu1.Unlock()
 			<-guard
 		}(ctx)
 	}
@@ -169,7 +167,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 	}
-
+	var mu sync.Mutex
+	mu.Lock()
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		err := sr.StockandSalesParser(g, reader)
@@ -253,4 +252,5 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			}
 		}
 	}
+	mu.Unlock()
 }

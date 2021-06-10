@@ -16,7 +16,7 @@ import (
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
 func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
-	log.Printf("Starting file parse: %v", g.FilePath)
+	//log.Printf("Starting file parse: %v", g.FilePath)
 
 	var fd utils.FileDetail
 	var stockandsalesRecords md.Record
