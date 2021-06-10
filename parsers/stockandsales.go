@@ -217,6 +217,12 @@ func assignItemH1(lineSlice []string) (tempItem md.Item) {
 
 func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.H2_Item_name])
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.H2_Item_name]))
+	if err != nil {
+		log.Printf("Error while replacing spacail charactor : %v\n", err)
+	} else {
+		tempItem.SearchString = SearchString
+	}
 	tempItem.Pack = strings.TrimSpace(lineSlice[hd.H2_PACK])
 	tempItem.UPC = strings.TrimSpace(lineSlice[hd.H2_UPC])
 	tempItem.Batch_number = strings.TrimSpace(lineSlice[hd.H2_BatchNumber])

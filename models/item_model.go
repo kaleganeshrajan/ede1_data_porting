@@ -34,6 +34,7 @@ type Item struct {
 
 type ItemBatch struct {
 	Item_name    string `json:"ItemName"`
+	SearchString string `json:"SearchString"`
 	Pack         string `json:"Pack"`
 	UPC          string `json:"UPC"`
 	Batch_number string `json:"BatchNumber"`
