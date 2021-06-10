@@ -42,7 +42,7 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 10
+	maxGoroutines = 15
 }
 
 func main() {
@@ -73,17 +73,19 @@ func main() {
 				fmt.Printf("Bucket(%q).Objects: %v", bucket, err)
 				continue
 			}
-
+			log.Printf("Sending file : %v", attrs.Name)
 			cm <- attrs
 			mu.Unlock()
 		}
 	}()
-
+	var mu1 sync.Mutex
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
 		go func(ctx context.Context) {
 			//fmt.Println(msg.Name)
+			mu1.Lock()
 			worker(ctx, msg.Name, bucket)
+			mu1.Unlock()
 			<-guard
 		}(ctx)
 	}
@@ -134,7 +136,7 @@ func main() {
 }
 
 func worker(ctx context.Context, filename string, bucketname string) {
-
+	log.Printf("Receved file : %v", filename)
 	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
 	// 	msg.Ack()
 	// 	return
