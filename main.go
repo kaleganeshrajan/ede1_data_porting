@@ -136,7 +136,7 @@ func main() {
 }
 
 func worker(ctx context.Context, filename string, bucketname string) {
-	log.Printf("Receved file : %v\n", filename)
+	log.Printf("Receved file in worker : %v\n", filename)
 	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
 	// 	msg.Ack()
 	// 	return
