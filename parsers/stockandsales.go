@@ -4,7 +4,7 @@ import (
 	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
-	ut "ede_porting/utils"
+	"ede_porting/utils"
 	"errors"
 	"io"
 	"log"
@@ -14,11 +14,11 @@ import (
 )
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	log.Printf("Starting file parse: %v", g.FilePath)
 
-	var fd ut.FileDetail
+	var fd utils.FileDetail
 	var stockandsalesRecords md.Record
 	var batchRecords md.RecordBatch
 	var invoicRrecords md.RecordInvoice
@@ -51,7 +51,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			batchRecords.DistributorCode = stockandsalesRecords.DistributorCode
 			invoicRrecords.DistributorCode = stockandsalesRecords.DistributorCode
 
-			cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
+			cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[hd.From_Date]))
 			if err != nil || cm.FromDate == nil {
 				log.Printf("stockandsales From Date Error: %v : %v", err, lineSlice[hd.From_Date])
 			} else {
@@ -59,7 +59,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 				batchRecords.FromDate = stockandsalesRecords.FromDate
 				invoicRrecords.FromDate = stockandsalesRecords.FromDate
 			}
-			cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
+			cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[hd.To_Date]))
 			if err != nil || cm.ToDate == nil {
 				log.Printf("stockandsales To Date Error: %v : %v", err, lineSlice[hd.To_Date])
 			} else {
@@ -79,7 +79,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			}
 			t := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]
 			t.Items = append(t.Items, tempItem)
-			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t			
+			cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 		case "T2":
 			tempItem := assignItemH2(lineSlice)
 			batchRecords.Batches = append(batchRecords.Batches, tempItem)
@@ -103,7 +103,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			stockandsalesRecords.Companies = append(stockandsalesRecords.Companies, val)
 		}
 		testinter = stockandsalesRecords
-		err = ut.GenerateJsonFile(testinter, hd.Stock_and_Sales)
+		err = utils.GenerateJsonFile(testinter, hd.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 
 	if len(batchRecords.Batches) > 1 {
 		testinter = batchRecords
-		err = ut.GenerateJsonFile(testinter, hd.Batch_details)
+		err = utils.GenerateJsonFile(testinter, hd.Batch_details)
 		if err != nil {
 			return err
 		}
@@ -122,7 +122,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			invoicRrecords.Companies = append(invoicRrecords.Companies, val)
 		}
 		testinter = invoicRrecords
-		err = ut.GenerateJsonFile(testinter, hd.Invoice_details)
+		err = utils.GenerateJsonFile(testinter, hd.Invoice_details)
 		if err != nil {
 			return err
 		}
@@ -143,7 +143,7 @@ func StockandSalesParser(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	return err
 }
 
-func assignHeader(g ut.GcsFile, stockandsalesRecords *md.Record, batchRecords *md.RecordBatch, invoicRrecords *md.RecordInvoice) {
+func assignHeader(g utils.GcsFile, stockandsalesRecords *md.Record, batchRecords *md.RecordBatch, invoicRrecords *md.RecordInvoice) {
 	stockandsalesRecords.FilePath = g.FilePath
 	batchRecords.FilePath = g.FilePath
 	invoicRrecords.FilePath = g.FilePath
@@ -177,6 +177,12 @@ func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	PTSLength := 0
 	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Item_code])
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Item_name])
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.Item_name]))
+	if err != nil {
+		log.Printf("Error while replacing spacail charactor : %v\n", err)
+	} else {
+		tempItem.SearchString = SearchString
+	}
 	tempItem.Pack = strings.TrimSpace(lineSlice[hd.PACK])
 	tempItem.UPC = strings.TrimSpace(lineSlice[hd.UPC])
 	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PTR]), 64)
@@ -215,7 +221,7 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	tempItem.UPC = strings.TrimSpace(lineSlice[hd.H2_UPC])
 	tempItem.Batch_number = strings.TrimSpace(lineSlice[hd.H2_BatchNumber])
 
-	ExpiryDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
+	ExpiryDate, err := utils.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
 	if err != nil || ExpiryDate == nil {
 		log.Printf("stockandsales Expiry Date Error: %v : %v\n", err, lineSlice[hd.H2_ExpiryDate])
 	} else {
@@ -228,7 +234,7 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 
 func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	tempItem.Invoice_Number = lineSlice[hd.H3_Invoice_Number]
-	InvoiceDate, err := ut.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
+	InvoiceDate, err := utils.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
 	if err != nil || InvoiceDate == nil {
 		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
 	} else {

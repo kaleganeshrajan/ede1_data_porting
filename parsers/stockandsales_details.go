@@ -4,7 +4,7 @@ import (
 	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
-	ut "ede_porting/utils"
+	"ede_porting/utils"
 	"errors"
 	"io"
 	"log"
@@ -13,14 +13,14 @@ import (
 	"time"
 )
 
-func StockandSalesDetails(g ut.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 
 	cMap := make(map[string]md.Company)
 
 	var stockandsalesRecords md.Record
-	var fd ut.FileDetail
+	var fd utils.FileDetail
 
 	assignHeaders(g, &stockandsalesRecords)
 
@@ -78,7 +78,7 @@ func StockandSalesDetails(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			stockandsalesRecords.Companies = append(stockandsalesRecords.Companies, val)
 		}
 		testinter = stockandsalesRecords
-		err = ut.GenerateJsonFile(testinter, hd.Stock_and_Sales)
+		err = utils.GenerateJsonFile(testinter, hd.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
@@ -102,19 +102,26 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
 	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
-	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
+	cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	if err != nil || cm.FromDate == nil {
 		log.Printf("stockandsales_details From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
-	cm.ToDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
+	cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
 	if err != nil || cm.ToDate == nil {
 		log.Printf("stockandsales_details To Date Error: %v : %v", err, lineSlice[hd.Todate])
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
+	SearchString,err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.ProductName]))
+	if err != nil {
+		log.Printf("Error while replacing spacail charactor : %v\n", err)
+	} else {
+		tempItem.SearchString = SearchString
+	}
+
 	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.StandardPTR]), 64)
 	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.OpeingUnits]), 64)
 	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesUnits]), 64)

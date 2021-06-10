@@ -116,6 +116,13 @@ func AssignItem(lineSlice []string) (tempItem models.Item) {
 	PTRLength := 0
 	tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[headers.Csv_Uniform_Pdt_Code])
 	tempItem.Item_code = strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code])
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code]))
+	if err != nil {
+		log.Printf("Error while replacing spacail charactor : %v\n", err)
+	} else {
+		tempItem.SearchString = SearchString
+	}
+
 	tempItem.Item_name = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
 	tempItem.Pack = strings.TrimSpace(lineSlice[headers.Csv_Pack])
 	if len(lineSlice) >= 16 {

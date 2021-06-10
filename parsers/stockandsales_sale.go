@@ -4,7 +4,7 @@ import (
 	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
-	ut "ede_porting/utils"
+	"ede_porting/utils"
 	"errors"
 	"io"
 	"log"
@@ -27,11 +27,11 @@ func initParser() {
 }
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesSale(g ut.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 	initParser()
-	var fd ut.FileDetail
+	var fd utils.FileDetail
 	var stockandsalesRecords md.Record
 
 	cMap := make(map[string]md.Company)
@@ -145,7 +145,7 @@ func StockandSalesSale(g ut.GcsFile, reader *bufio.Reader) (err error) {
 		}
 		testinter = stockandsalesRecords
 
-		err = ut.GenerateJsonFile(testinter, hd.Stock_and_Sales)
+		err = utils.GenerateJsonFile(testinter, hd.Stock_and_Sales)
 
 		if err != nil {
 			return err
@@ -166,17 +166,17 @@ func StockandSalesSale(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	return nil
 }
 
-func assignHeaders(g ut.GcsFile, stockandsalesRecords *md.Record) {
+func assignHeaders(g utils.GcsFile, stockandsalesRecords *md.Record) {
 	stockandsalesRecords.Key = g.FileKey
 	stockandsalesRecords.FilePath = g.FilePath
-	if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V4 PATCH"){
+	if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V4 PATCH") {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V4_Patch)
-	}else if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V5 PATCH"){
+	} else if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V5 PATCH") {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V5_Patch)
-	}else{
+	} else {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_Excel_Format)
 	}
-	
+
 	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
 	if strings.Contains(g.BucketName, "MTD") {
 		stockandsalesRecords.Duration = hd.DurationMTD
@@ -190,14 +190,14 @@ func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempIte
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice.ACODE)
 
-	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice.FROM_DATE))
-	if err != nil ||cm.FromDate==nil{
+	cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice.FROM_DATE))
+	if err != nil || cm.FromDate == nil {
 		log.Printf("stockandsales_sale From Date Error: %v : %v", err, lineSlice.FROM_DATE)
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
-	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice.TO_DATE))
-	if err != nil||cm.ToDate ==nil{
+	cm.ToDate, _ = utils.ConvertDate(strings.TrimSpace(lineSlice.TO_DATE))
+	if err != nil || cm.ToDate == nil {
 		log.Printf("stockandsales_sale To Date Error: %v : %v", err, lineSlice.TO_DATE)
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
@@ -205,6 +205,12 @@ func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempIte
 
 	tempItem.Item_code = strings.TrimSpace(lineSlice.ITEM_CODE)
 	tempItem.Item_name = strings.TrimSpace(lineSlice.ITEM_NAME)
+	SearchString,err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice.ITEM_NAME))
+	if err != nil {
+		log.Printf("Error while replacing spacail charactor : %v\n", err)
+	} else {
+		tempItem.SearchString = SearchString
+	}
 	tempItem.Pack = strings.TrimSpace(lineSlice.PACK_SIZE)
 	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.SPR_PTR), 64)
 	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.OP_BAL), 64)

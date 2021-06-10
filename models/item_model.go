@@ -3,6 +3,7 @@ package models
 type Item struct {
 	Item_code           string  `json:"ItemCode"`
 	Item_name           string  `json:"ItemName"`
+	SearchString        string  `json:"SearchString"`
 	Pack                string  `json:"Pack"`
 	UPC                 string  `json:"UPC"`
 	PTR                 float64 `json:"PTR"`
