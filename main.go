@@ -168,7 +168,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		}
 	}
 	var mu sync.Mutex
-	mu.Lock()
+	
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		err := sr.StockandSalesParser(g, reader)
@@ -184,12 +184,13 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
+		mu.Lock()
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
 
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
-		//log.Println(script, "-p", fileName, "-d", outPutFile)
+		log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
 		err := cmd.Run()
@@ -199,7 +200,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 		fd, err := os.Open(outPutFile)
-		defer os.Remove(outPutFile)
+		os.Remove(outPutFile)
+		//defer os.Remove(outPutFile)
 		if err != nil {
 			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", headers.Error_File_details, g)
 			log.Printf("Error while open Excel file : %v\n", err)
@@ -235,6 +237,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 				return
 			}
 		}
+		mu.Unlock()
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, reader)
@@ -252,5 +255,5 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			}
 		}
 	}
-	mu.Unlock()
+	
 }
