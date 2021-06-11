@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 
 	"google.golang.org/api/iterator"
@@ -42,7 +41,7 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 15
+	maxGoroutines = 1
 }
 
 func main() {
@@ -167,8 +166,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 	}
-	var mu sync.Mutex
-	
+
 	switch {
 	case strings.Contains(strings.ToUpper(g.FileName), "AWACS PATCH"):
 		err := sr.StockandSalesParser(g, reader)
@@ -184,7 +182,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			log.Println(err)
 		}
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4"), strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL"):
-		mu.Lock()
+
 		script := "./file_convert/ede_xls_dbf_to_csv.py"
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
@@ -237,7 +235,6 @@ func worker(ctx context.Context, filename string, bucketname string) {
 				return
 			}
 		}
-		mu.Unlock()
 	case strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5"):
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
 			err := sr.StockandSalesSale(g, reader)
@@ -255,5 +252,5 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			}
 		}
 	}
-	
+
 }
