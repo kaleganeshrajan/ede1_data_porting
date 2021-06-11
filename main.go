@@ -206,29 +206,29 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 
-		reader = bufio.NewReader(fd)
-		if reader == nil {
+		readerin := bufio.NewReader(fd)
+		if readerin == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")
 			return
 		}
 
 		if strings.Contains(strings.ToUpper(g.FileName), "SALE_DTL") {
-			err := sr.StockandSalesSale(g, reader)
+			err := sr.StockandSalesSale(g, readerin)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else if strings.Contains(strings.ToUpper(g.FileName), ".XLS") || strings.Contains(strings.ToUpper(g.FileName), ".XLSX") {
-			err := sr.StockandSalesDetails(g, reader)
+			err := sr.StockandSalesDetails(g, readerin)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
 				return
 			}
 		} else {
-			err := sr.StockandSalesDits(g, reader)
+			err := sr.StockandSalesDits(g, readerin)
 			if err != nil {
 				ef.ErrorFileDetails(g.FilePath, err.Error(), headers.Error_File_details, g)
 				log.Println(err)
