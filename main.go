@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -94,17 +95,13 @@ func main() {
 	// }
 	// defer client.Close()
 	// var awacsSubscriptions []*pubsub.Subscription
-
 	// for _, name := range awacsSubNames {
 	// 	awacsSubscriptions = append(awacsSubscriptions, client.Subscription(name))
 	// }
-
 	// ctx, cancel := context.WithCancel(ctx)
 	// defer cancel()
-
 	// Create a channel to handle messages to as they come in.
 	// cm := make(chan *pubsub.Message)
-
 	// defer close(cm)
 	// guard := make(chan struct{}, maxGoroutines)
 	// log.Println("Starting go routines")
@@ -119,7 +116,6 @@ func main() {
 	// 		}
 	// 	}(sub)
 	// }
-
 	// log.Println("Starting go Message reader")
 	// for msg := range cm {
 	// 	guard <- struct{}{} // would block if guard channel is already filled
@@ -187,7 +183,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		fileName := "gs://" + g.FilePath
 		temp := strings.Split(g.FilePath, "/")
 
-		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + ".csv"
+		tUnix := strconv.Itoa(int(time.Now().Unix()))
+		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + "_" + tUnix + ".csv"
 		log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
