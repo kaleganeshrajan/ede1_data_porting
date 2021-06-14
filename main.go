@@ -42,7 +42,7 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 10
+	maxGoroutines = 1
 }
 
 func main() {
@@ -81,8 +81,9 @@ func main() {
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
 		go func(ctx context.Context) {
+			time.Sleep(500 * time.Millisecond)
 			//fmt.Println(msg.Name)
-			log.Printf("Sending file Goroutines : %v\n", msg.Name)
+			//log.Printf("Sending file Goroutines : %v\n", msg.Name)
 			worker(ctx, msg.Name, bucket)
 			<-guard
 		}(ctx)
@@ -149,6 +150,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		return
 	}
 
+	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-test")
+	return
 	var ef utils.ErrorFileDetail
 	var r io.Reader
 	var reader *bufio.Reader
@@ -195,8 +198,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 		fd, err := os.Open(outPutFile)
-		os.Remove(outPutFile)
-		//defer os.Remove(outPutFile)
+		//os.Remove(outPutFile)
+		defer os.Remove(outPutFile)
 		if err != nil {
 			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", headers.Error_File_details, g)
 			log.Printf("Error while open Excel file : %v\n", err)
