@@ -81,7 +81,7 @@ func main() {
 	for msg := range cm {
 		guard <- struct{}{} // would block if guard channel is already filled
 		go func(ctx context.Context) {
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(10000 * time.Millisecond)
 			//fmt.Println(msg.Name)
 			//log.Printf("Sending file Goroutines : %v\n", msg.Name)
 			worker(ctx, msg.Name, bucket)
