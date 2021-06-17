@@ -167,7 +167,6 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 }
 
 func assignHeaders(g utils.GcsFile, stockandsalesRecords *md.Record) {
-	stockandsalesRecords.Key = g.FileKey
 	stockandsalesRecords.FilePath = g.FilePath
 	if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V4 PATCH") {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V4_Patch)

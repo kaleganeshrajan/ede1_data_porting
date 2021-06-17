@@ -7,7 +7,6 @@ type Record struct {
 	FromDate         string    `json:"FromDate"`
 	FileType         string    `json:"FileType"`
 	Duration         string    `json:"Duration"`
-	Key              string    `json:"Key"`
 	CreationDatetime string    `json:"CreationDatetime"`
 	Companies        []Company `json:"Companies"`
 }
@@ -40,7 +39,6 @@ type RecordDist struct {
 	ToDate           string `json:"ToDate"`
 	FromDate         string `json:"FromDate"`
 	Duration         string `json:"Duration"`
-	Key              string `json:"Key"`
 	DistName         string `json:"DistName"`
 	StateName        string `json:"StateName"`
 	CityName         string `json:"CityName"`

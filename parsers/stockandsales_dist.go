@@ -46,7 +46,6 @@ func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
 		} else {
 			if len(lineSlice) == 6 {
 				recordsDist = assignItems(lineSlice)
-				recordsDist.Key = strings.TrimSpace(g.FileKey)
 				if strings.Contains(g.BucketName, "MTD") {
 					recordsDist.Duration = hd.DurationMTD
 				} else {
