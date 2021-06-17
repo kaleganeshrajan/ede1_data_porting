@@ -42,7 +42,7 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 3
+	maxGoroutines = 1
 }
 
 func main() {
@@ -73,7 +73,7 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "01-2021"){
+			if strings.Contains(attrs.Name, "02-2021"){
 				cm <- attrs
 
 			}			
