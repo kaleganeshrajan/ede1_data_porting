@@ -61,7 +61,7 @@ func main() {
 	guard := make(chan struct{}, maxGoroutines)
 	cm := make(chan *storage.ObjectAttrs)
 	day := 1
-	query := &storage.Query{Prefix: "UploadSSA/2" + strconv.Itoa(day)}
+	query := &storage.Query{Prefix: "UploadSSA/0" + strconv.Itoa(day)}
 	go func() {
 		//it := client.Bucket(bucket).Objects(ctx, nil)
 
