@@ -60,12 +60,16 @@ func main() {
 
 	guard := make(chan struct{}, maxGoroutines)
 	cm := make(chan *storage.ObjectAttrs)
-
+	day := 1
+	query := &storage.Query{Prefix: "UploadSSA/0" + strconv.Itoa(day)}
 	go func() {
-		it := client.Bucket(bucket).Objects(ctx, nil)
+		//it := client.Bucket(bucket).Objects(ctx, nil)
+
+		it := client.Bucket(bucket).Objects(ctx, query)
 		for {
 			attrs, err := it.Next()
 			if err == iterator.Done {
+				day = day + 1
 				return
 			}
 			if err != nil {
@@ -73,10 +77,10 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "03-2021"){
+			if strings.Contains(attrs.Name, "03-2021") {
 				cm <- attrs
 
-			}			
+			}
 		}
 	}()
 
