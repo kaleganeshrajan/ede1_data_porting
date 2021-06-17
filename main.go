@@ -73,8 +73,10 @@ func main() {
 				continue
 			}
 
-			cm <- attrs
+			if strings.Contains(attrs.Name, "01-2021"){
+				cm <- attrs
 
+			}			
 		}
 	}()
 
@@ -130,7 +132,7 @@ func main() {
 }
 
 func worker(ctx context.Context, filename string, bucketname string) {
-	//log.Printf("Receved file in worker : %v\n", filename)
+	log.Printf("Receved file in worker : %v\n", filename)
 	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
 	// 	msg.Ack()
 	// 	return
@@ -150,8 +152,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		return
 	}
 
-	g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-test")
-	return
+	// g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-test")
+	// return
 	var ef utils.ErrorFileDetail
 	var r io.Reader
 	var reader *bufio.Reader
