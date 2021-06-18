@@ -1,10 +1,10 @@
 package parsers
 
 import (
-	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	"ede_porting/utils"
+	"encoding/csv"
 	"errors"
 	"io"
 	"log"
@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesDetails(g utils.GcsFile, reader *csv.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 
@@ -28,22 +28,19 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	flag := 1
 	seperator := "\x10"
 	for {
-		line, err := reader.ReadString('\n')
-		//fmt.Println(line)
-		if err != nil && err == io.EOF {
-			break
-		}
-		if len(line) <= 2 {
+		line, err := reader.Read()
+
+		if len(line[0]) <= 2 {
 			break
 		}
 
-		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, seperator)
+		line[0] = strings.TrimSpace(line[0])
+		lineSlice := strings.Split(line[0], seperator)
 		if len(lineSlice) <= 3 {
 			seperator = "|"
-			lineSlice = strings.Split(line, seperator)
+			lineSlice = strings.Split(line[0], seperator)
 			if len(lineSlice) <= 3 {
-				return errors.New("File format is wrong" + g.FileName)
+				return errors.New("File format is wrong :- " + line[0])
 			}
 		}
 
@@ -69,6 +66,10 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			} else {
 				return errors.New("file is not correct format")
 			}
+		}
+
+		if err != nil && err == io.EOF {
+			break
 		}
 	}
 
@@ -115,7 +116,7 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
-	SearchString,err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.ProductName]))
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.ProductName]))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
 	} else {

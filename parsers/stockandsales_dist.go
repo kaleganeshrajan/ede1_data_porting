@@ -1,10 +1,10 @@
 package parsers
 
 import (
-	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	ut "ede_porting/utils"
+	"encoding/csv"
 	"errors"
 	"io"
 	"log"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 
@@ -23,22 +23,20 @@ func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	flag := 1
 	seperator := "\x10"
 	for {
-		line, err := reader.ReadString('\n')
-		if err != nil && err == io.EOF {
-			break
-		}
-		if len(line) <= 2 {
+		line, err := reader.Read()
+
+		if len(line[0]) <= 2 {
 			break
 		}
 
-		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, seperator)
+		line[0] = strings.TrimSpace(line[0])
+		lineSlice := strings.Split(line[0], seperator)
 		if len(lineSlice) <= 3 {
 			seperator = "|"
-			lineSlice = strings.Split(line, seperator)
+			lineSlice = strings.Split(line[0], seperator)
 			if len(lineSlice) <= 3 {
 				seperator = ";"
-				lineSlice = strings.Split(line, seperator)
+				lineSlice = strings.Split(line[0], seperator)
 			}
 		}
 		if flag == 1 {
@@ -56,6 +54,10 @@ func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
 			} else {
 				return errors.New("file is not correct format")
 			}
+		}
+
+		if err != nil && err == io.EOF {
+			break
 		}
 	}
 
@@ -90,13 +92,13 @@ func assignItems(lineSlice []string) (recordsDist md.RecordDist) {
 	recordsDist.StateName = strings.TrimSpace(lineSlice[hd.StateName])
 
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.DFromDate]))
-	if err != nil ||cm.FromDate==nil{
+	if err != nil || cm.FromDate == nil {
 		log.Printf("stockandsales_dist From Date Error: %v : %v", err, lineSlice[hd.DFromDate])
 	} else {
 		recordsDist.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.DToDate]))
-	if err != nil||cm.ToDate==nil {
+	if err != nil || cm.ToDate == nil {
 		log.Printf("stockandsales_dist To Date Error: %v : %v", err, lineSlice[hd.DToDate])
 	} else {
 		recordsDist.ToDate = cm.ToDate.Format("2006-01-02")

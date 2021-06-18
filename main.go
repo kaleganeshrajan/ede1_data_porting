@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"ede_porting/headers"
 	"ede_porting/models"
 	sr "ede_porting/parsers"
 	"ede_porting/utils"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -47,7 +47,7 @@ func init() {
 
 func main() {
 
-	bucket := "awacs-mtd" //awacs-monthlydata //awacs-mtd
+	bucket := "awacs-test" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -63,8 +63,6 @@ func main() {
 	//day := 1
 	//query := &storage.Query{Prefix: "UploadSSA/0" + strconv.Itoa(day)}
 	go func() {
-		//it := client.Bucket(bucket).Objects(ctx, nil)
-
 		it := client.Bucket(bucket).Objects(ctx, nil)
 		for {
 			attrs, err := it.Next()
@@ -77,9 +75,9 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "03-2021") {
-				cm <- attrs
-			}
+			//if strings.Contains(attrs.Name, "03-2021") {
+			cm <- attrs
+			//}
 
 		}
 	}()
@@ -160,10 +158,10 @@ func worker(ctx context.Context, filename string, bucketname string) {
 	// return
 	var ef utils.ErrorFileDetail
 	var r io.Reader
-	var reader *bufio.Reader
+	var reader *csv.Reader
 	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
 		r = g.GcsClient.GetReader()
-		reader = bufio.NewReader(r)
+		reader = csv.NewReader(r)
 
 		if reader == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
@@ -199,7 +197,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 
 		err := cmd.Run()
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, "Error while running command", headers.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, "Error while running command : "+err.Error(), headers.Error_File_details, g)
 			log.Printf("Error while running command : %v\n", err.Error())
 			return
 		}
@@ -207,12 +205,12 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		//os.Remove(outPutFile)
 		defer os.Remove(outPutFile)
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", headers.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file : "+err.Error(), headers.Error_File_details, g)
 			log.Printf("Error while open Excel file : %v\n", err)
 			return
 		}
 
-		readerin := bufio.NewReader(fd)
+		readerin := csv.NewReader(fd)
 		if readerin == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")

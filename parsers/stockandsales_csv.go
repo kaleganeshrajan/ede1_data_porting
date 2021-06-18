@@ -1,10 +1,10 @@
 package parsers
 
 import (
-	"bufio"
 	"ede_porting/headers"
 	"ede_porting/models"
 	"ede_porting/utils"
+	"encoding/csv"
 	"errors"
 	"io"
 	"log"
@@ -14,7 +14,7 @@ import (
 )
 
 //StockandSalesParser parse stock and sales with PTR and without PTR
-func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesCSVParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 
@@ -39,17 +39,14 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	SS_count := 0
 
 	for {
-		line, err := reader.ReadString('\r')
-		if err != nil && err == io.EOF {
+		line, err := reader.Read()		
+
+		if len(line[0]) <= 2 {
 			break
 		}
 
-		if len(line) <= 2 {
-			break
-		}
-
-		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, ",")
+		line[0] = strings.TrimSpace(line[0])
+		lineSlice := strings.Split(line[0], ",")
 
 		lineSlice[0] = utils.Removespacialcharactor(lineSlice[0])
 
@@ -80,6 +77,10 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			t := cMap[strings.TrimSpace(lineSlice[headers.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = t
+		}
+
+		if err != nil && err == io.EOF {
+			break
 		}
 	}
 

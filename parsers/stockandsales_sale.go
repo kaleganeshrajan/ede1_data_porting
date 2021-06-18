@@ -1,10 +1,10 @@
 package parsers
 
 import (
-	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	"ede_porting/utils"
+	"encoding/csv"
 	"errors"
 	"io"
 	"log"
@@ -27,7 +27,7 @@ func initParser() {
 }
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
+func StockandSalesSale(g utils.GcsFile, reader *csv.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 	initParser()
@@ -41,23 +41,23 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	flag := 1
 	seperator := "\x10"
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.Read()
 
 		if err != nil && err == io.EOF {
 			break
 		}
-		if len(line) <= 2 {
+		if len(line[0]) <= 2 {
 			break
 		}
 
-		line = strings.TrimSpace(line)
-		lineSlice := strings.Split(line, seperator)
+		line[0] = strings.TrimSpace(line[0])
+		lineSlice := strings.Split(line[0], seperator)
 		if len(lineSlice) <= 3 {
 			seperator = "|"
-			lineSlice = strings.Split(line, seperator)
+			lineSlice = strings.Split(line[0], seperator)
 			if len(lineSlice) <= 3 {
 				seperator = ";"
-				lineSlice = strings.Split(line, seperator)
+				lineSlice = strings.Split(line[0], seperator)
 			}
 		}
 
@@ -204,7 +204,7 @@ func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempIte
 
 	tempItem.Item_code = strings.TrimSpace(lineSlice.ITEM_CODE)
 	tempItem.Item_name = strings.TrimSpace(lineSlice.ITEM_NAME)
-	SearchString,err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice.ITEM_NAME))
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice.ITEM_NAME))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
 	} else {
