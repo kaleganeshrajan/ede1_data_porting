@@ -39,9 +39,9 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	SS_count := 0
 
 	for {
-		line, err := reader.Read()
+		lineSlice, err := reader.Read()
 
-		if line == nil {
+		if lineSlice == nil {
 			break
 		}
 
@@ -49,12 +49,12 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 			break
 		}
 
-		if len(line[0]) <= 2 {
+		if len(lineSlice) <= 2 {
 			break
 		}
 
-		line[0] = strings.TrimSpace(line[0])
-		lineSlice := strings.Split(line[0], ",")
+		// line[0] = strings.TrimSpace(line[0])
+		// lineSlice := strings.Split(line[0], ",")
 
 		lineSlice[0] = utils.Removespacialcharactor(lineSlice[0])
 

@@ -78,7 +78,7 @@ func main() {
 			if strings.Contains(attrs.Name, "03-2021") {
 				cm <- attrs
 			}
-
+			//cm <- attrs
 		}
 	}()
 
@@ -162,7 +162,34 @@ func worker(ctx context.Context, filename string, bucketname string) {
 	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
 		r = g.GcsClient.GetReader()
 		reader = csv.NewReader(r)
-		//reader.LazyQuotes = true
+		reader.LazyQuotes = true
+		for {
+			line, _ := reader.Read()
+			lineSlice := strings.Split(line[0], "\x10")
+			if len(lineSlice) <= 3 {
+				lineSlice = strings.Split(line[0], "|")
+				if len(lineSlice) <= 3 {
+					lineSlice = strings.Split(line[0], ";")
+					if len(lineSlice) <= 3 {
+						lineSlice = strings.Split(line[0], ",")
+						if len(lineSlice) <= 3 {
+							reader.Comma = ','
+							break
+						} else {
+							ef.ErrorFileDetails(g.FilePath, "File format is wrong :"+lineSlice[0], headers.Error_File_details, g)
+							log.Printf("error while getting reader : %v ", lineSlice[0])
+						}
+						reader.Comma = ';'
+						break
+					}
+				}
+				reader.Comma = '|'
+				break
+			}
+			reader.Comma = '\x10'
+			break
+		}
+
 		if reader == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")

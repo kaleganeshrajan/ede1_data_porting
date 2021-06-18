@@ -6,6 +6,7 @@ import (
 	"ede_porting/utils"
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -33,22 +34,22 @@ func StockandSalesParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	INV_Count := 0
 
 	for {
-		line, err := reader.Read()
+		lineSlice, err := reader.Read()
 
-		if line == nil {
+		if lineSlice == nil {
 			break
 		}
 
-		if err != nil && err == io.EOF && line == nil {
+		if err != nil && err == io.EOF && lineSlice == nil {
 			break
 		}
 
-		if len(line[0]) <= 2 {
+		if len(lineSlice) <= 2 {
 			break
 		}
 
-		line[0] = strings.TrimSpace(line[0])
-		lineSlice := strings.Split(line[0], "|")
+		//line[0] = strings.TrimSpace(line[0])
+		//lineSlice := strings.Split(line[0], "|")
 
 		switch lineSlice[0] {
 		case "H1", "H2", "H3":
@@ -181,6 +182,7 @@ func assignHeader(g utils.GcsFile, stockandsalesRecords *md.Record, batchRecords
 
 func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	PTSLength := 0
+	fmt.Println(lineSlice)
 	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Item_code])
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Item_name])
 	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.Item_name]))

@@ -39,36 +39,32 @@ func StockandSalesSale(g utils.GcsFile, reader *csv.Reader) (err error) {
 
 	SS_count := 0
 	flag := 1
-	seperator := "\x10"
+	//seperator := "\x10"
 	for {
-		line, err := reader.Read()
+		lineSlice, err := reader.Read()
 
-		if line ==nil{
+		if lineSlice ==nil{
 			break
 		}
 
 		if err != nil && err == io.EOF {
 			break
-		}
+		}		
 
-		if len(line) < 1 {
+		if len(lineSlice) <= 2 {
 			break
 		}
 
-		if len(line[0]) <= 2 {
-			break
-		}
-
-		line[0] = strings.TrimSpace(line[0])
-		lineSlice := strings.Split(line[0], seperator)
-		if len(lineSlice) <= 3 {
-			seperator = "|"
-			lineSlice = strings.Split(line[0], seperator)
-			if len(lineSlice) <= 3 {
-				seperator = ";"
-				lineSlice = strings.Split(line[0], seperator)
-			}
-		}
+		// line[0] = strings.TrimSpace(line[0])
+		// lineSlice := strings.Split(line[0], seperator)
+		// if len(lineSlice) <= 3 {
+		// 	seperator = "|"
+		// 	lineSlice = strings.Split(line[0], seperator)
+		// 	if len(lineSlice) <= 3 {
+		// 		seperator = ";"
+		// 		lineSlice = strings.Split(line[0], seperator)
+		// 	}
+		// }
 
 		if len(lineSlice) == 17 {
 			SS_count = SS_count + 1

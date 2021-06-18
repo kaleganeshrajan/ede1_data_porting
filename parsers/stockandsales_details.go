@@ -26,11 +26,11 @@ func StockandSalesDetails(g utils.GcsFile, reader *csv.Reader) (err error) {
 
 	SS_count := 0
 	flag := 1
-	seperator := "\x10"
+	//seperator := "\x10"
 	for {
-		line, err := reader.Read()
+		lineSlice, err := reader.Read()
 
-		if line ==nil{
+		if lineSlice ==nil{
 			break
 		}
 
@@ -38,19 +38,19 @@ func StockandSalesDetails(g utils.GcsFile, reader *csv.Reader) (err error) {
 			break
 		}
 		
-		if len(line[0]) <= 2 {
+		if len(lineSlice) <= 2 {
 			break
 		}
 
-		line[0] = strings.TrimSpace(line[0])
-		lineSlice := strings.Split(line[0], seperator)
-		if len(lineSlice) <= 3 {
-			seperator = "|"
-			lineSlice = strings.Split(line[0], seperator)
-			if len(lineSlice) <= 3 {
-				return errors.New("File format is wrong :- " + line[0])
-			}
-		}
+		// line[0] = strings.TrimSpace(line[0])
+		// lineSlice := strings.Split(line[0], seperator)
+		// if len(lineSlice) <= 3 {
+		// 	seperator = "|"
+		// 	lineSlice = strings.Split(line[0], seperator)
+		// 	if len(lineSlice) <= 3 {
+		// 		return errors.New("File format is wrong :- " + line[0])
+		// 	}
+		// }
 
 		if flag == 1 {
 			flag = 0
