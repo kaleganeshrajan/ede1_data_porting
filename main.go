@@ -206,7 +206,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		defer os.Remove(outPutFile)
 		if err != nil {
 			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file : "+err.Error(), headers.Error_File_details, g)
-			log.Printf("Error while open Excel file : %v\n", err)
+			log.Printf("Error while open Excel file : %v\n", err.Error())
 			return
 		}
 
