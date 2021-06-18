@@ -162,7 +162,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
 		r = g.GcsClient.GetReader()
 		reader = csv.NewReader(r)
-
+		reader.LazyQuotes = true
 		if reader == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")
