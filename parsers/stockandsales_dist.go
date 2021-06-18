@@ -24,6 +24,10 @@ func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
 	seperator := "\x10"
 	for {
 		line, err := reader.Read()
+		
+		if line ==nil{
+			break
+		}
 
 		if err != nil && err == io.EOF {
 			break

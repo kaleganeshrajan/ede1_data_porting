@@ -41,6 +41,10 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	for {
 		line, err := reader.Read()
 
+		if line == nil {
+			break
+		}
+
 		if err != nil && err == io.EOF {
 			break
 		}
