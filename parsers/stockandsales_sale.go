@@ -46,6 +46,11 @@ func StockandSalesSale(g utils.GcsFile, reader *csv.Reader) (err error) {
 		if err != nil && err == io.EOF {
 			break
 		}
+
+		if len(line) < 1 {
+			break
+		}
+
 		if len(line[0]) <= 2 {
 			break
 		}
@@ -117,6 +122,7 @@ func StockandSalesSale(g utils.GcsFile, reader *csv.Reader) (err error) {
 		} else {
 			return errors.New("file is not correct format")
 		}
+
 	}
 
 	assignHeaders(g, &stockandsalesRecords)

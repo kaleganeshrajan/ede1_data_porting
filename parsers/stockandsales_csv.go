@@ -39,7 +39,11 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	SS_count := 0
 
 	for {
-		line, err := reader.Read()		
+		line, err := reader.Read()
+
+		if err != nil && err == io.EOF {
+			break
+		}
 
 		if len(line[0]) <= 2 {
 			break
@@ -77,10 +81,6 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 			t := cMap[strings.TrimSpace(lineSlice[headers.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = t
-		}
-
-		if err != nil && err == io.EOF {
-			break
 		}
 	}
 

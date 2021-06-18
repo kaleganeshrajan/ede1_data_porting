@@ -30,6 +30,10 @@ func StockandSalesDetails(g utils.GcsFile, reader *csv.Reader) (err error) {
 	for {
 		line, err := reader.Read()
 
+		if err != nil && err == io.EOF {
+			break
+		}
+		
 		if len(line[0]) <= 2 {
 			break
 		}
@@ -68,9 +72,7 @@ func StockandSalesDetails(g utils.GcsFile, reader *csv.Reader) (err error) {
 			}
 		}
 
-		if err != nil && err == io.EOF {
-			break
-		}
+		
 	}
 
 	var testinter interface{}

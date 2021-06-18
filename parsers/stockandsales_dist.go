@@ -25,6 +25,10 @@ func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
 	for {
 		line, err := reader.Read()
 
+		if err != nil && err == io.EOF {
+			break
+		}
+		
 		if len(line[0]) <= 2 {
 			break
 		}
@@ -56,9 +60,7 @@ func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
 			}
 		}
 
-		if err != nil && err == io.EOF {
-			break
-		}
+		
 	}
 
 	if recordsDist.DistributorCode != "" {

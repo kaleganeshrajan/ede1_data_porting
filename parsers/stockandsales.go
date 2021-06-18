@@ -35,6 +35,10 @@ func StockandSalesParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	for {
 		line, err := reader.Read()
 
+		if err != nil && err == io.EOF {
+			break
+		}
+
 		if len(line[0]) <= 2 {
 			break
 		}
@@ -93,9 +97,6 @@ func StockandSalesParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 			cMapInvoice[lineSlice[hd.Company_code]] = t
 		}
 
-		if err != nil && err == io.EOF {
-			break
-		}
 	}
 
 	var testinter interface{}
