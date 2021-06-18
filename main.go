@@ -47,7 +47,7 @@ func init() {
 
 func main() {
 
-	bucket := "awacs-test" //awacs-monthlydata //awacs-mtd
+	bucket := "awacs-mtd" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -75,9 +75,9 @@ func main() {
 				continue
 			}
 
-			//if strings.Contains(attrs.Name, "03-2021") {
-			cm <- attrs
-			//}
+			if strings.Contains(attrs.Name, "01-2021") {
+				cm <- attrs
+			}
 
 		}
 	}()
@@ -192,7 +192,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 
 		tUnix := strconv.Itoa(int(time.Now().Unix()))
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + "_" + tUnix + ".csv"
-		log.Println(script, "-p", fileName, "-d", outPutFile)
+		//log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
 		err := cmd.Run()
