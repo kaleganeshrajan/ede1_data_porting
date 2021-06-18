@@ -4,6 +4,7 @@ from BucketHandler import BucketCon
 import os
 import pandas as pd
 from dbfread import DBF
+from dbfread import FieldParser
 
 
 seperator = chr(0x10)
@@ -177,18 +178,23 @@ class Parser:
 
     def saveConvertedFile(self, sourcefile) -> None:
         # Check df is null
-
-        try:
-            self.__df.to_csv(sourcefile.destPath, seperator,  index=False)
-            self._awacslogger.info(
-                "Ported file saved at :" + sourcefile.destPath)
-            print("Done.")
-        except Exception as e:
+        if self.__df is not None and not self.__df.empty:
+            try:
+                self.__df.to_csv(sourcefile.destPath, seperator,  index=False)
+                self._awacslogger.info(
+                    "Ported file saved at :" + sourcefile.destPath)
+                print("Done.")
+            except Exception as e:
+                self._awacslogger.error(
+                    "Ported file cannot save at :" + sourcefile.destPath + " ERROR: " + str(e))
+                print("Ported file cannot save at :" +
+                      sourcefile.destPath + " ERROR: " + str(e))
+                exit(-1)
+        else:
             self._awacslogger.error(
-                "Ported file cannot save at :" + sourcefile.destPath + " ERROR: " + str(e))
-            print("Ported file cannot save at :" +
-                  sourcefile.destPath + " ERROR: " + str(e))
-            exit(-1)
+                "DF of file is empty :" + sourcefile.filePath + "/" + sourcefile.fileName + sourcefile.fileType)
+            print("DF of file is empty : :" +
+                  sourcefile.filePath + "/" + sourcefile.fileName + sourcefile.fileType)
 
     def deleteTempFile(self, path) -> None:
         if os.path.exists(path):
@@ -235,9 +241,20 @@ class DBFParser(Builder):
         try:
             dataDict = []
             blob.download_to_filename(self.__tempfile + '.DBF')
-            for row in DBF(self.__tempfile + '.DBF', encoding='cp858'):
+            for row in DBF(self.__tempfile + '.DBF', encoding='cp858',  parserclass=MyFieldParser):
                 dataDict.append(row)
             df = pd.DataFrame.from_records(dataDict)
             return df
         except Exception as e:
             self._awacslogger.error("Data porting for .dbf failed:" + str(e))
+
+
+class MyFieldParser(FieldParser):
+    def parseN(self, field, data):
+        # Had to strip out the other characters first before \x00, as per super function specs.
+        data = data.strip().strip(b'*\x00')
+        return super(MyFieldParser, self).parseN(field, data)
+
+    def parseD(self, field, data):
+        data = data.strip(b'\x00')
+        return super(MyFieldParser, self).parseD(field, data)
