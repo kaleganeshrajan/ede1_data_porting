@@ -75,7 +75,7 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "01-2021") {
+			if strings.Contains(attrs.Name, "02-2021") {
 				cm <- attrs
 			}
 
