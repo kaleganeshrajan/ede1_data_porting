@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"ede_porting/headers"
 	"ede_porting/models"
 	sr "ede_porting/parsers"
 	"ede_porting/utils"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -42,7 +44,7 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 3
+	maxGoroutines = 5
 }
 
 func main() {
@@ -75,7 +77,7 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "03-2021") {
+			if strings.Contains(attrs.Name, "01-2021") {
 				cm <- attrs
 			}
 			//cm <- attrs
@@ -133,6 +135,39 @@ func main() {
 	// }
 }
 
+func getSeprator(r io.Reader) (rune, error) {
+	// r1 := bufio.NewReader(r)
+	// l, _, _ := r1.ReadLine()
+	// fmt.Println(string(l))
+	reader := bufio.NewReader(r)
+
+	//reader.Comma = '|'
+	line1, _, err := reader.ReadLine()
+	line := string(line1)
+	if err != nil {
+		return '%', errors.New("error while reading file : " + err.Error())
+	}
+	dd := len(line)
+	fmt.Println(dd)
+	if len(line) >= 3 {
+		return ',', nil
+	}
+
+	seprator := []rune{'\x10', '|', ';'}
+	for _, s := range seprator {
+		reader1 := csv.NewReader(r)
+		reader1.LazyQuotes = true
+		//reader.Comma = s
+		line, err := reader1.Read()
+		fmt.Println(err)
+
+		if len(line) >= 2 {
+			return s, nil
+		}
+	}
+	return '%', errors.New("no seprator found : ")
+}
+
 func worker(ctx context.Context, filename string, bucketname string) {
 	log.Printf("Receved file in worker : %v\n", filename)
 	// if msg.Attributes["eventType"] == "OBJECT_DELETE" {
@@ -158,38 +193,13 @@ func worker(ctx context.Context, filename string, bucketname string) {
 	// return
 	var ef utils.ErrorFileDetail
 	var r io.Reader
-	var reader *csv.Reader
+	var reader *bufio.Reader
 	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
 		r = g.GcsClient.GetReader()
-		reader = csv.NewReader(r)
-		reader.LazyQuotes = true
-		for {
-			line, _ := reader.Read()
-			lineSlice := strings.Split(line[0], "\x10")
-			if len(lineSlice) <= 3 {
-				lineSlice = strings.Split(line[0], "|")
-				if len(lineSlice) <= 3 {
-					lineSlice = strings.Split(line[0], ";")
-					if len(lineSlice) <= 3 {
-						lineSlice = strings.Split(line[0], ",")
-						if len(lineSlice) <= 3 {
-							reader.Comma = ','
-							break
-						} else {
-							ef.ErrorFileDetails(g.FilePath, "File format is wrong :"+lineSlice[0], headers.Error_File_details, g)
-							log.Printf("error while getting reader : %v ", lineSlice[0])
-						}
-						reader.Comma = ';'
-						break
-					}
-				}
-				reader.Comma = '|'
-				break
-			}
-			reader.Comma = '\x10'
-			break
-		}
-
+		reader = bufio.NewReader(r)
+		//reader.LazyQuotes = true
+		//s, _ := getSeprator(r)
+		//reader.Comma = s
 		if reader == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")
@@ -237,7 +247,7 @@ func worker(ctx context.Context, filename string, bucketname string) {
 			return
 		}
 
-		readerin := csv.NewReader(fd)
+		readerin := bufio.NewReader(fd)
 		if readerin == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")

@@ -1,10 +1,10 @@
 package parsers
 
 import (
+	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	"ede_porting/utils"
-	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
@@ -15,7 +15,7 @@ import (
 )
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
-func StockandSalesParser(g utils.GcsFile, reader *csv.Reader) (err error) {
+func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 
@@ -34,22 +34,18 @@ func StockandSalesParser(g utils.GcsFile, reader *csv.Reader) (err error) {
 	INV_Count := 0
 
 	for {
-		lineSlice, err := reader.Read()
+		line, err := reader.ReadString('\r')
 
-		if lineSlice == nil {
+		if err != nil && err == io.EOF {
 			break
 		}
 
-		if err != nil && err == io.EOF && lineSlice == nil {
+		if len(line) <= 2 {
 			break
 		}
 
-		if len(lineSlice) <= 2 {
-			break
-		}
-
-		//line[0] = strings.TrimSpace(line[0])
-		//lineSlice := strings.Split(line[0], "|")
+		line = strings.TrimSpace(line)
+		lineSlice := strings.Split(line, "|")
 
 		switch lineSlice[0] {
 		case "H1", "H2", "H3":

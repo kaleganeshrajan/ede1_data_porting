@@ -1,10 +1,10 @@
 package parsers
 
 import (
+	"bufio"
 	hd "ede_porting/headers"
 	md "ede_porting/models"
 	ut "ede_porting/utils"
-	"encoding/csv"
 	"errors"
 	"io"
 	"log"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
+func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
 	startTime := time.Now()
 	//log.Printf("Starting file parse: %v", g.FilePath)
 
@@ -21,32 +21,28 @@ func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
 	var fd ut.FileDetail
 
 	flag := 1
-	//seperator := "\x10"
+	seperator := "\x10"
 	for {
-		lineSlice, err := reader.Read()
-		
-		if lineSlice ==nil{
-			break
-		}
+		line, err := reader.ReadString('\n')
 
 		if err != nil && err == io.EOF {
 			break
 		}
-		
-		if len(lineSlice) <= 2 {
+
+		if len(line) <= 2 {
 			break
 		}
 
-		// line[0] = strings.TrimSpace(line[0])
-		// lineSlice := strings.Split(line[0], seperator)
-		// if len(lineSlice) <= 3 {
-		// 	seperator = "|"
-		// 	lineSlice = strings.Split(line[0], seperator)
-		// 	if len(lineSlice) <= 3 {
-		// 		seperator = ";"
-		// 		lineSlice = strings.Split(line[0], seperator)
-		// 	}
-		// }
+		line = strings.TrimSpace(line)
+		lineSlice := strings.Split(line, seperator)
+		if len(lineSlice) <= 3 {
+			seperator = "|"
+			lineSlice = strings.Split(line, seperator)
+			if len(lineSlice) <= 3 {
+				seperator = ";"
+				lineSlice = strings.Split(line, seperator)
+			}
+		}
 		if flag == 1 {
 			flag = 0
 		} else {
@@ -64,7 +60,6 @@ func StockandSalesDits(g ut.GcsFile, reader *csv.Reader) (err error) {
 			}
 		}
 
-		
 	}
 
 	if recordsDist.DistributorCode != "" {
