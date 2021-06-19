@@ -6,7 +6,6 @@ import (
 	md "ede_porting/models"
 	"ede_porting/utils"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -178,7 +177,7 @@ func assignHeader(g utils.GcsFile, stockandsalesRecords *md.Record, batchRecords
 
 func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	PTSLength := 0
-	fmt.Println(lineSlice)
+
 	tempItem.Item_code = strings.TrimSpace(lineSlice[hd.Item_code])
 	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.Item_name])
 	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.Item_name]))
