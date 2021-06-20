@@ -77,10 +77,10 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "06-2021") {
-				cm <- attrs
-			}
-			//cm <- attrs
+			// if strings.Contains(attrs.Name, "06-2021") {
+			// 	cm <- attrs
+			// }
+			cm <- attrs
 		}
 	}()
 
