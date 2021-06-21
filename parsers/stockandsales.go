@@ -226,7 +226,7 @@ func assignItemH1(lineSlice []string) (tempItem md.Item) {
 }
 
 func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
-	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.H2_Item_name])
+	tempItem.ItemName = strings.TrimSpace(lineSlice[hd.H2_Item_name])
 	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.H2_Item_name]))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
@@ -235,28 +235,28 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	}
 	tempItem.Pack = strings.TrimSpace(lineSlice[hd.H2_PACK])
 	tempItem.UPC = strings.TrimSpace(lineSlice[hd.H2_UPC])
-	tempItem.Batch_number = strings.TrimSpace(lineSlice[hd.H2_BatchNumber])
+	tempItem.BatchNumber = strings.TrimSpace(lineSlice[hd.H2_BatchNumber])
 
 	ExpiryDate, err := utils.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
 	if err != nil || ExpiryDate == nil {
 		log.Printf("stockandsales Expiry Date Error: %v : %v\n", err, lineSlice[hd.H2_ExpiryDate])
 	} else {
-		tempItem.Expiry_date = ExpiryDate.Format("2006-01-02")
+		tempItem.ExpiryDate = ExpiryDate.Format("2006-01-02")
 	}
 
-	tempItem.Closing_Qty = strings.TrimSpace(lineSlice[hd.H2_Closing_Stock])
+	tempItem.ClosingQuantity = strings.TrimSpace(lineSlice[hd.H2_Closing_Stock])
 	return tempItem
 }
 
 func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
-	tempItem.Invoice_Number = lineSlice[hd.H3_Invoice_Number]
+	tempItem.InvoiceNumber = lineSlice[hd.H3_Invoice_Number]
 	InvoiceDate, err := utils.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
 	if err != nil || InvoiceDate == nil {
 		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
 	} else {
-		tempItem.Invoice_Date = InvoiceDate.Format("2006-01-02")
+		tempItem.InvoiceDate = InvoiceDate.Format("2006-01-02")
 	}
-	tempItem.Invoice_Amount = lineSlice[hd.H3_Invoice_amount]
+	tempItem.InvoiceAmount = lineSlice[hd.H3_Invoice_amount]
 	return tempItem
 }
 

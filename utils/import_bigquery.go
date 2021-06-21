@@ -26,7 +26,7 @@ func GenerateJsonFile(Rrecords interface{}, tableName string) (err error) {
 	inserter := client.Dataset(hd.DatasetID).Table(tableName).Inserter()
 
 	if err := inserter.Put(ctx, Rrecords); err != nil {
-		log.Println(err)
+		log.Printf("Error while inserting data : %v\n", err)
 		return err
 	}
 	return nil
