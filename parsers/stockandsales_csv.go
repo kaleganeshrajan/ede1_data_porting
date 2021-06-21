@@ -37,9 +37,15 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 		records.Duration = headers.DurationMonthly
 	}
 	SS_count := 0
-
+	newLine := byte('\n')
 	for {
-		line, err := reader.ReadString('\r')
+		line, err := reader.ReadString(newLine)
+
+		if err != nil && len(line) > 2 {
+			reader = bufio.NewReader(strings.NewReader(line))
+			newLine = '\r'
+			continue
+		}
 
 		if err != nil && err == io.EOF {
 			break
@@ -116,7 +122,7 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 func AssignItem(lineSlice []string) (tempItem models.Item) {
 	PTRLength := 0
 	tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[headers.Csv_Uniform_Pdt_Code])
-	tempItem.Item_code = strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code])
+	tempItem.ItemCode = strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code])
 	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code]))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
@@ -124,18 +130,18 @@ func AssignItem(lineSlice []string) (tempItem models.Item) {
 		tempItem.SearchString = SearchString
 	}
 
-	tempItem.Item_name = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
+	tempItem.ItemName = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
 	tempItem.Pack = strings.TrimSpace(lineSlice[headers.Csv_Pack])
 	if len(lineSlice) >= 16 {
 		tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_PTR]), 64)
 		PTRLength = 1
 	}
-	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Opening_Qty+PTRLength]), 64)
-	tempItem.Purchases_Reciepts, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Receipts_Qty+PTRLength]), 64)
-	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Sales_Qty+PTRLength]), 64)
-	tempItem.Sales_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Sales_Ret_Qty+PTRLength]), 64)
-	tempItem.Purchase_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Purch_Ret_Qty+PTRLength]), 64)
+	tempItem.OpeningStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Opening_Qty+PTRLength]), 64)
+	tempItem.PurchasesReciept, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Receipts_Qty+PTRLength]), 64)
+	tempItem.SalesQty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Sales_Qty+PTRLength]), 64)
+	tempItem.SalesReturn, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Sales_Ret_Qty+PTRLength]), 64)
+	tempItem.PurchaseReturn, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Purch_Ret_Qty+PTRLength]), 64)
 	tempItem.Adjustments, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_Adjustments_Qty+PTRLength]), 64)
-	tempItem.Closing_Stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_ClosingQty+PTRLength]), 64)
+	tempItem.ClosingStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_ClosingQty+PTRLength]), 64)
 	return tempItem
 }

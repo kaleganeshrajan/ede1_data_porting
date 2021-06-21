@@ -1,27 +1,27 @@
 package models
 
 type Item struct {
-	Item_code           string  `json:"ItemCode"`
-	Item_name           string  `json:"ItemName"`
+	ItemCode           string  `json:"ItemCode"`
+	ItemName           string  `json:"ItemName"`
 	SearchString        string  `json:"SearchString"`
 	Pack                string  `json:"Pack"`
 	UPC                 string  `json:"UPC"`
 	PTR                 float64 `json:"PTR"`
 	PTS                 float64 `json:"PTS"`
 	MRP                 float64 `json:"MRP"`
-	Opening_stock       float64 `json:"OpeningStock"`
-	Sales_qty           float64 `json:"SalesQty"`
-	Bonus_qty           float64 `json:"BonusQty"`
-	Sales_return        float64 `json:"SalesReturn"`
-	Expiry_in           float64 `json:"ExpiryIn"`
-	Discount_percentage float64 `json:"DiscountPercentage"`
-	Discount_amount     float64 `json:"DiscountAmount"`
-	Sale_tax            float64 `json:"SaleTax"`
-	Purchases_Reciepts  float64 `json:"PurchasesReciept"`
-	Purchase_return     float64 `json:"PurchaseReturn"`
-	Expiry_out          float64 `json:"ExpiryOut"`
+	OpeningStock       float64 `json:"OpeningStock"`
+	SalesQty           float64 `json:"SalesQty"`
+	BonusQty           float64 `json:"BonusQty"`
+	SalesReturn        float64 `json:"SalesReturn"`
+	ExpiryIn           float64 `json:"ExpiryIn"`
+	DiscountPercentage float64 `json:"DiscountPercentage"`
+	DiscountAmount     float64 `json:"DiscountAmount"`
+	SaleTax            float64 `json:"SaleTax"`
+	PurchasesReciept  float64 `json:"PurchasesReciept"`
+	PurchaseReturn     float64 `json:"PurchaseReturn"`
+	ExpiryOut          float64 `json:"ExpiryOut"`
 	Adjustments         float64 `json:"Adjustments"`
-	Closing_Stock       float64 `json:"ClosingStock"`
+	ClosingStock       float64 `json:"ClosingStock"`
 	UniformPdtCode      string  `json:"UniformPdtCode"`
 	InstaSales          float64 `json:"InstaSales"`
 	OpenVal             float64 `json:"OpenVal"`

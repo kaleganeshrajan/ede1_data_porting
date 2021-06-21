@@ -27,8 +27,15 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	SS_count := 0
 	flag := 1
 	seperator := "\x10"
+	newLine := byte('\n')
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.ReadString(newLine)
+
+		if err != nil && len(line) > 2 {
+			reader = bufio.NewReader(strings.NewReader(line))
+			newLine = '\r'
+			continue
+		}
 
 		if err != nil && err == io.EOF {
 			break
@@ -116,7 +123,7 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}
-	tempItem.Item_name = strings.TrimSpace(lineSlice[hd.ProductName])
+	tempItem.ItemName = strings.TrimSpace(lineSlice[hd.ProductName])
 	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[hd.ProductName]))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
@@ -125,12 +132,12 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	}
 
 	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.StandardPTR]), 64)
-	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.OpeingUnits]), 64)
-	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesUnits]), 64)
-	tempItem.Closing_Stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.ClosingUnits]), 64)
+	tempItem.OpeningStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.OpeingUnits]), 64)
+	tempItem.SalesQty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesUnits]), 64)
+	tempItem.ClosingStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.ClosingUnits]), 64)
 	tempItem.PurchaseVal, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseUnits]), 64)
-	tempItem.Purchase_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseReturn]), 64)
-	tempItem.Sales_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesReturn]), 64)
+	tempItem.PurchaseReturn, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseReturn]), 64)
+	tempItem.SalesReturn, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesReturn]), 64)
 	tempItem.PurchaseFree, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.PurchaseFree]), 64)
 	tempItem.SalesFree, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesFree]), 64)
 

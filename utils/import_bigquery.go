@@ -15,6 +15,46 @@ import (
 
 //GenerateJsonFile generate json file and insert to bigquery
 func GenerateJsonFile(Rrecords interface{}, tableName string) (err error) {
+	ctx := context.Background()
+	client, err := bigquery.NewClient(ctx, hd.ProjectID)
+	if err != nil {
+		log.Printf("bigquery.NewClient: %v", err)
+		return err
+	}
+	defer client.Close()
+
+	inserter := client.Dataset(hd.DatasetID).Table(tableName).Inserter()
+
+	if err := inserter.Put(ctx, Rrecords); err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+
+	// file, err := json.Marshal(Rrecords)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// Filename := hd.Filename + uuid.New().String() + ".json"
+
+	// err = ioutil.WriteFile(Filename, file, 0644)
+	// if err != nil {
+	// 	log.Printf("Error while creating Json file: %v", err)
+	// 	log.Printf("Error while creating Json file: %v", err)
+	// 	return err
+	// }
+
+	// err = ImporttoBigquery(hd.ProjectID, hd.DatasetID, tableName, Filename)
+	// if err != nil {
+	// 	log.Printf("Error while importing to bigquery: %v", err)
+	// 	return err
+	// }
+
+	// return nil
+}
+
+//GenerateJsonFile generate json file and insert to bigquery
+func GenerateJsonFile1(Rrecords interface{}, tableName string) (err error) {
 	file, err := json.Marshal(Rrecords)
 	if err != nil {
 		panic(err)
