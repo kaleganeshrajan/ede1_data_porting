@@ -73,7 +73,6 @@ func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			g.DistributorCode = stockandsalesRecords.DistributorCode
 		case "T1":
 			SS_count = SS_count + 1
-
 			tempItem := assignItemH1(lineSlice)
 
 			if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
@@ -115,7 +114,6 @@ func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	if len(batchRecords.Batches) > 1 {
@@ -238,9 +236,9 @@ func assignItemH2(lineSlice []string) (tempItem md.ItemBatch) {
 	tempItem.BatchNumber = strings.TrimSpace(lineSlice[hd.H2_BatchNumber])
 
 	ExpiryDate, err := utils.ConvertDate(strings.TrimSpace(lineSlice[hd.H2_ExpiryDate]))
-	if err != nil || ExpiryDate == nil {
+	if err != nil || ExpiryDate == nil {		
 		log.Printf("stockandsales Expiry Date Error: %v : %v\n", err, lineSlice[hd.H2_ExpiryDate])
-	} else {
+	} else {		
 		tempItem.ExpiryDate = ExpiryDate.Format("2006-01-02")
 	}
 
@@ -252,7 +250,7 @@ func assignItemH3(lineSlice []string) (tempItem md.Invoice) {
 	tempItem.InvoiceNumber = lineSlice[hd.H3_Invoice_Number]
 	InvoiceDate, err := utils.ConvertDate(strings.TrimSpace(lineSlice[hd.H3_Invoice_Date]))
 	if err != nil || InvoiceDate == nil {
-		log.Printf("stockandsales Invoice Date Error: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
+		log.Printf("stockandsales Invoice C: %v : %v", err, lineSlice[hd.H3_Invoice_Date])
 	} else {
 		tempItem.InvoiceDate = InvoiceDate.Format("2006-01-02")
 	}
