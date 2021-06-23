@@ -41,7 +41,7 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	for {
 		line, err := reader.ReadString(newLine)
 
-		if err != nil && len(line) > 2 {
+		if err != nil && len(line) > 100 {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
 			continue
