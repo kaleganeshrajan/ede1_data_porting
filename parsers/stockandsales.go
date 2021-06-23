@@ -35,7 +35,7 @@ func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	for {
 		line, err := reader.ReadString(newLine)
 
-		if err != nil && len(line) > 100 {
+		if err != nil && len(line) > 1000 {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
 			continue

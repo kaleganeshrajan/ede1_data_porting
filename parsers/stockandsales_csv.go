@@ -41,15 +41,11 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	for {
 		line, err := reader.ReadString(newLine)
 
-		if err != nil && len(line) > 100 {
+		if err != nil && len(line) > 1000 {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
 			continue
-		}
-
-		if err != nil && err == io.EOF {
-			break
-		}
+		}		
 
 		if len(line) <= 2 {
 			break
@@ -87,6 +83,10 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			t := cMap[strings.TrimSpace(lineSlice[headers.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = t
+		}
+
+		if err != nil && err == io.EOF {
+			break
 		}
 	}
 
