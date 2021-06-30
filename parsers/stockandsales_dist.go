@@ -22,11 +22,16 @@ func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
 
 	flag := 1
 	seperator := "\x10"
+	newLine := byte('\n')
 	for {
-		line, err := reader.ReadString('\n')
-		if err != nil && err == io.EOF {
-			break
+		line, err := reader.ReadString(newLine)
+
+		if err != nil && len(line) > 1000 {
+			reader = bufio.NewReader(strings.NewReader(line))
+			newLine = '\r'
+			continue
 		}
+
 		if len(line) <= 2 {
 			break
 		}
@@ -57,6 +62,13 @@ func StockandSalesDits(g ut.GcsFile, reader *bufio.Reader) (err error) {
 				return errors.New("file is not correct format")
 			}
 		}
+
+		
+		if err != nil && err == io.EOF {
+			break
+		}
+
+
 	}
 
 	if recordsDist.DistributorCode != "" {
@@ -90,13 +102,13 @@ func assignItems(lineSlice []string) (recordsDist md.RecordDist) {
 	recordsDist.StateName = strings.TrimSpace(lineSlice[hd.StateName])
 
 	cm.FromDate, err = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.DFromDate]))
-	if err != nil ||cm.FromDate==nil{
+	if err != nil || cm.FromDate == nil {
 		log.Printf("stockandsales_dist From Date Error: %v : %v", err, lineSlice[hd.DFromDate])
 	} else {
 		recordsDist.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, _ = ut.ConvertDate(strings.TrimSpace(lineSlice[hd.DToDate]))
-	if err != nil||cm.ToDate==nil {
+	if err != nil || cm.ToDate == nil {
 		log.Printf("stockandsales_dist To Date Error: %v : %v", err, lineSlice[hd.DToDate])
 	} else {
 		recordsDist.ToDate = cm.ToDate.Format("2006-01-02")

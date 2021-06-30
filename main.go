@@ -42,11 +42,10 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 3
+	maxGoroutines = 15
 }
 
 func main() {
-
 	bucket := "awacs-mtd" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -63,8 +62,6 @@ func main() {
 	//day := 1
 	//query := &storage.Query{Prefix: "UploadSSA/0" + strconv.Itoa(day)}
 	go func() {
-		//it := client.Bucket(bucket).Objects(ctx, nil)
-
 		it := client.Bucket(bucket).Objects(ctx, nil)
 		for {
 			attrs, err := it.Next()
@@ -77,10 +74,10 @@ func main() {
 				continue
 			}
 
-			if strings.Contains(attrs.Name, "03-2021") {
-				cm <- attrs
-			}
-
+			// if strings.Contains(attrs.Name, "06-2021") {
+			// 	cm <- attrs
+			// }
+			cm <- attrs
 		}
 	}()
 
@@ -162,9 +159,42 @@ func worker(ctx context.Context, filename string, bucketname string) {
 	var r io.Reader
 	var reader *bufio.Reader
 	if !strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4") || !strings.Contains(strings.ToUpper(g.FileName), "STANDARD EXCEL") {
+		// csvr := g.GcsClient.GetReader()
+		// csvreader := csv.NewReader(csvr)
+		// csvreader.LazyQuotes = true
+		// //csvreader.Comma = '|'
+		// for {
+		// 	line, err := csvreader.Read()
+		// 	if err != nil {
+		// 		fmt.Println(err)
+		// 	}
+		// 	fmt.Println(line)
+		// }
+
 		r = g.GcsClient.GetReader()
 		reader = bufio.NewReader(r)
+		// newLine := byte('\r')
+		// for {
+		// 	line, err := reader.ReadString(newLine)
 
+		// 	if err != nil && len(line) > 2 {
+		// 		reader = bufio.NewReader(strings.NewReader(line))
+		// 		newLine = '\r'
+		// 		continue
+		// 	}
+		// 	if err != nil {
+		// 		fmt.Println(err)
+		// 		break
+		// 	}
+		// 	fmt.Println(line)
+		// }
+		// os.Exit(1)
+		// s, _ := getSeprator(r)
+
+		// csvr := g.GcsClient.GetReader()
+		// csvreader := csv.NewReader(csvr)
+		// csvreader.LazyQuotes = true
+		// csvreader.Comma = s
 		if reader == nil {
 			ef.ErrorFileDetails(g.FilePath, "error while getting reader", headers.Error_File_details, g)
 			log.Println("error while getting reader")
@@ -194,12 +224,12 @@ func worker(ctx context.Context, filename string, bucketname string) {
 
 		tUnix := strconv.Itoa(int(time.Now().Unix()))
 		outPutFile := "/tmp/" + temp[len(temp)-2] + "_" + temp[len(temp)-1] + "_" + tUnix + ".csv"
-		log.Println(script, "-p", fileName, "-d", outPutFile)
+		//log.Println(script, "-p", fileName, "-d", outPutFile)
 		cmd := exec.Command(script, "-p", fileName, "-d", outPutFile)
 
 		err := cmd.Run()
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, "Error while running command", headers.Error_File_details, g)
+			ef.ErrorFileDetails(g.FilePath, "Error while running command : "+err.Error(), headers.Error_File_details, g)
 			log.Printf("Error while running command : %v\n", err.Error())
 			return
 		}
@@ -207,8 +237,8 @@ func worker(ctx context.Context, filename string, bucketname string) {
 		//os.Remove(outPutFile)
 		defer os.Remove(outPutFile)
 		if err != nil {
-			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file", headers.Error_File_details, g)
-			log.Printf("Error while open Excel file : %v\n", err)
+			ef.ErrorFileDetails(g.FilePath, "Error while open Excel file : "+err.Error(), headers.Error_File_details, g)
+			log.Printf("Error while open Excel file : %v\n", err.Error())
 			return
 		}
 

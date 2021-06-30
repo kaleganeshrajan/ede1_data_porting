@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"strings"
 	"time"
 )
@@ -70,8 +69,9 @@ func init() {
 
 //ConvertDate takes string returns time.time pointer
 func ConvertDate(dateString string) (*time.Time, error) {
+	t1, _ := time.Parse("2006-01-02", "1970-01-01")
 	if dateString == "" {
-		return nil, errors.New("format not found")
+		return &t1, nil
 	}
 	datelength := len(strings.Replace(dateString, "/", "", 1))
 	if datelength == 7 || datelength == 5 || datelength == 3 {
@@ -86,5 +86,6 @@ func ConvertDate(dateString string) (*time.Time, error) {
 			return &t, nil
 		}
 	}
-	return nil, err
+
+	return &t1, nil
 }

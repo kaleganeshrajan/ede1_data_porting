@@ -40,12 +40,16 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	SS_count := 0
 	flag := 1
 	seperator := "\x10"
+	newLine := byte('\n')
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.ReadString(newLine)
 
-		if err != nil && err == io.EOF {
-			break
+		if err != nil && len(line) > 1000 {
+			reader = bufio.NewReader(strings.NewReader(line))
+			newLine = '\r'
+			continue
 		}
+
 		if len(line) <= 2 {
 			break
 		}
@@ -117,6 +121,11 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 		} else {
 			return errors.New("file is not correct format")
 		}
+
+		if err != nil && err == io.EOF {
+			break
+		}
+
 	}
 
 	assignHeaders(g, &stockandsalesRecords)
@@ -202,9 +211,9 @@ func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempIte
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}
 
-	tempItem.Item_code = strings.TrimSpace(lineSlice.ITEM_CODE)
-	tempItem.Item_name = strings.TrimSpace(lineSlice.ITEM_NAME)
-	SearchString,err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice.ITEM_NAME))
+	tempItem.ItemCode = strings.TrimSpace(lineSlice.ITEM_CODE)
+	tempItem.ItemName = strings.TrimSpace(lineSlice.ITEM_NAME)
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice.ITEM_NAME))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
 	} else {
@@ -212,14 +221,14 @@ func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempIte
 	}
 	tempItem.Pack = strings.TrimSpace(lineSlice.PACK_SIZE)
 	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.SPR_PTR), 64)
-	tempItem.Opening_stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.OP_BAL), 64)
-	tempItem.Sales_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.SALE_QTY), 64)
-	tempItem.Bonus_qty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.BON_QTY), 64)
-	tempItem.Discount_percentage, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.DIS_PERC), 64)
-	tempItem.Discount_amount, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.DIS_AMT), 64)
-	tempItem.Closing_Stock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.CL_BAL), 64)
-	tempItem.Sales_return, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.SALE_QTY), 64)
-	tempItem.Sale_tax, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.STAX_PERC), 64)
+	tempItem.OpeningStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.OP_BAL), 64)
+	tempItem.SalesQty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.SALE_QTY), 64)
+	tempItem.BonusQty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.BON_QTY), 64)
+	tempItem.DiscountPercentage, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.DIS_PERC), 64)
+	tempItem.DiscountAmount, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.DIS_AMT), 64)
+	tempItem.ClosingStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.CL_BAL), 64)
+	tempItem.SalesReturn, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.SALE_QTY), 64)
+	tempItem.SaleTax, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice.STAX_PERC), 64)
 
 	return tempItem
 }
