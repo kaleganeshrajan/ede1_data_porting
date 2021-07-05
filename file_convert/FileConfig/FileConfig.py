@@ -180,6 +180,7 @@ class Parser:
         # Check df is null
         if self.__df is not None and not self.__df.empty:
             try:
+                self.__df = self.__df.replace('\n', ' ', regex=True)
                 self.__df.to_csv(sourcefile.destPath, seperator,  index=False)
                 self._awacslogger.info(
                     "Ported file saved at :" + sourcefile.destPath)

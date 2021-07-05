@@ -15,28 +15,28 @@ import (
 
 //StockandSalesParser parse stock and sales with PTR and without PTR
 func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
-	startTime := time.Now()
-	//log.Printf("Starting file parse: %v", g.FilePath)
+
+	startTime := time.Now().In(utils.ConvertUTCtoIST())
+	//log.Printf("Starting file parse: %v", g.FileName)
 
 	var records models.Record
 	cMap := make(map[string]models.Company)
 	var fd utils.FileDetail
-	var cm models.Common
 
-	records.FilePath = g.FilePath
-	if strings.Contains(strings.ToUpper(g.FilePath), "CSV 1.0") {
+	records.FilePath = g.FileName
+	if strings.Contains(strings.ToUpper(g.FileName), "CSV 1.0") {
 		records.FileType = strconv.Itoa(headers.CSV_1_0)
 	} else {
 		records.FileType = strconv.Itoa(headers.CSV_1_1)
 	}
-
-	records.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
-	if strings.Contains(g.BucketName, "MTD") {
+	records.CreationDatetime = time.Now().In(utils.ConvertUTCtoIST()).Format("2006-01-02 15:04:05")
+	if strings.Contains(strings.ToUpper(g.BucketName), "MTD") {
 		records.Duration = headers.DurationMTD
 	} else {
 		records.Duration = headers.DurationMonthly
 	}
 	SS_count := 0
+
 	newLine := byte('\n')
 	for {
 		line, err := reader.ReadString(newLine)
@@ -45,7 +45,11 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
 			continue
-		}		
+		}
+
+		if len(line) <= 2 && err == nil {
+			continue
+		}
 
 		if len(line) <= 2 {
 			break
@@ -62,13 +66,13 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 
 			cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.From_Date]))
 			if err != nil || cm.FromDate == nil {
-				log.Printf("stockandsales_csv From Date Error: %v : %v", err, lineSlice[headers.From_Date])
+				log.Printf("stockandsales_csv From Date Error: %v : %v : %v\n", err, lineSlice[headers.From_Date], g.FileName)
 			} else {
 				records.FromDate = cm.FromDate.Format("2006-01-02")
 			}
 			cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[headers.To_Date]))
 			if err != nil || cm.ToDate == nil {
-				log.Printf("stockandsales_csv To Date Error: %v : %v", err, lineSlice[headers.To_Date])
+				log.Printf("stockandsales_csv To Date Error: %v : %v : %v\n", err, lineSlice[headers.To_Date], g.FileName)
 			} else {
 				records.ToDate = cm.ToDate.Format("2006-01-02")
 			}
@@ -83,8 +87,8 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			t := cMap[strings.TrimSpace(lineSlice[headers.Company_code])]
 			t.Items = append(t.Items, tempItem)
 			cMap[strings.TrimSpace(lineSlice[headers.Company_code])] = t
-		}
 
+		}
 		if err != nil && err == io.EOF {
 			break
 		}
@@ -96,19 +100,16 @@ func StockandSalesCSVParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			records.Companies = append(records.Companies, val)
 		}
 		testinter = records
-		err = utils.GenerateJsonFile(testinter, headers.Stock_and_Sales)
+		err = utils.InserttoBigquery(testinter, headers.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
 
-		fd.FileDetails(g.FilePath, records.DistributorCode, SS_count, 0,
-			0, int64(time.Since(startTime)/1000000), headers.File_details)
-		if err != nil {
-			return err
-		}
+		fd.FileDetails(g.FileName, records.DistributorCode, SS_count, 0,
+			0, int64(time.Since(startTime)/1000000), records.FromDate, records.ToDate, headers.File_details)
 
 		g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
-		//log.Printf("File parsing done: %v", g.FilePath)
+		//log.Printf("File parsing done: %v", g.FileName)
 
 		g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 	} else {
@@ -123,14 +124,13 @@ func AssignItem(lineSlice []string) (tempItem models.Item) {
 	PTRLength := 0
 	tempItem.UniformPdtCode = strings.TrimSpace(lineSlice[headers.Csv_Uniform_Pdt_Code])
 	tempItem.ItemCode = strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code])
-	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[headers.Csv_Stkt_Product_Code]))
+	tempItem.ItemName = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
+	SearchString, err := utils.ReplaceSpacialCharactor(strings.TrimSpace(lineSlice[headers.Csv_Product_Name]))
 	if err != nil {
 		log.Printf("Error while replacing spacail charactor : %v\n", err)
 	} else {
 		tempItem.SearchString = SearchString
 	}
-
-	tempItem.ItemName = strings.TrimSpace(lineSlice[headers.Csv_Product_Name])
 	tempItem.Pack = strings.TrimSpace(lineSlice[headers.Csv_Pack])
 	if len(lineSlice) >= 16 {
 		tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[headers.Csv_PTR]), 64)

@@ -1,0 +1,37 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "StockistCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FileProcessTime",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "RecordCount_SS",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "RecordCount_BT",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "RecordCount_INV",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CreationDatetime",
+    "type": "DATETIME"
+  }
+]

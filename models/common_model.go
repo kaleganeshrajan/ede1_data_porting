@@ -7,6 +7,5 @@ type Common struct {
 	FromDate     *time.Time
 	ToDate       *time.Time
 	ExpiryDate   *time.Time
-	StockistCode string
+	StockistCode string	
 }
-

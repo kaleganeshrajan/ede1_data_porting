@@ -1,0 +1,12 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "FileTypeName",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FileType",
+    "type": "STRING"
+  }
+]

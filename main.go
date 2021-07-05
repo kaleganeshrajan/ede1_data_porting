@@ -42,11 +42,11 @@ type BukectStruct struct {
 func init() {
 	//awacsSubNames = []string{"awacs-ede1-test-sub"}
 	//projectID = "awacs-dev"
-	maxGoroutines = 15
+	maxGoroutines = 5
 }
 
 func main() {
-	bucket := "awacs-mtd" //awacs-monthlydata //awacs-mtd
+	bucket := "awacs-ede1-test" //awacs-monthlydata //awacs-mtd
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {

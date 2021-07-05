@@ -1,0 +1,70 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "FromDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ToDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DistributorCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FileType",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Duration",
+    "type": "STRING"
+  },
+  {
+    "fields": [
+      {
+        "name": "CompanyName",
+        "type": "STRING"
+      },
+      {
+        "name": "CompanyCode",
+        "type": "STRING"
+      },
+      {
+        "fields": [
+          {
+            "name": "InvoiceNumber",
+            "type": "STRING"
+          },
+          {
+            "name": "InvoiceDate",
+            "type": "DATE"
+          },
+          {
+            "name": "InvoiceAmount",
+            "type": "FLOAT"
+          }
+        ],
+        "mode": "REPEATED",
+        "name": "Invoices",
+        "type": "RECORD"
+      }
+    ],
+    "mode": "REPEATED",
+    "name": "Companies",
+    "type": "RECORD"
+  },
+  {
+    "name": "CreationDatetime",
+    "type": "DATETIME"
+  }
+]

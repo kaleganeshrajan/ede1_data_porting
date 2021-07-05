@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	err           error
+	err error
 )
 
 //GcsBucketClient holds all required attributes to do gsc bucket operation
@@ -17,6 +17,7 @@ type GcsBucketClient struct {
 	client     *storage.Client
 	bucketName string
 	r          *storage.Reader
+	r1         io.ReaderAt
 	ctx        context.Context
 	// status indicates that one or more of the demo steps failed.
 	status bool
@@ -95,6 +96,11 @@ func (g *GcsBucketClient) MoveObject(srcObject string, destObject string, destBu
 //GetReader expose reader
 func (g *GcsBucketClient) GetReader() io.Reader {
 	return g.r
+}
+
+//GetReader expose reader
+func (g *GcsBucketClient) GetReaderAt() io.ReaderAt {
+	return g.r1
 }
 
 //Close closes reader

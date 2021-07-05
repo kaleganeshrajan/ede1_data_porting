@@ -1,0 +1,51 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DistributorCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ToDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FromDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Duration",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Key",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DistName",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CityName",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "StateName",
+    "type": "STRING"
+  },
+  {
+    "name": "CreationDatetime",
+    "type": "DATETIME"
+  }
+]

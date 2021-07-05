@@ -1,0 +1,22 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "CreationDatetime",
+    "type": "DATETIME"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "StockistCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Reson",
+    "type": "STRING"
+  }
+]

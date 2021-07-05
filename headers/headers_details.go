@@ -64,6 +64,7 @@ const (
 	FileTypePTR     string = "Without_PTR"
 	DurationMTD     string = "MTD"
 	DurationMonthly string = "Monthly"
+	ZipOutFile      string = "/UnzipFile/"
 )
 
 const (
@@ -93,6 +94,7 @@ const (
 	File_details         = "file_details"
 	Error_File_details   = "error_file_details"
 	Stock_and_Sales_Dist = "stock_and_sale_dist"
+	File_Store           = "file_store"
 )
 
 const (
@@ -108,9 +110,9 @@ const (
 	StaxPerc
 	SretQty
 	PackSize
+	StockistCode
 	OpeningStock
 	ClosingStock
-	StockistCode
 	FromDate
 	ToDate
 )
@@ -150,3 +152,9 @@ const (
 	Standard_V4_Patch       = 6
 	Standard_V5_Patch       = 7
 )
+
+// const (
+// 	FileNotPorted = "Not Ported"
+// 	FilePorted    = "Ported"
+// 	FIleError     = "Error"
+// )

@@ -86,6 +86,10 @@ func ConvertDate(dateString string) (*time.Time, error) {
 			return &t, nil
 		}
 	}
-
 	return &t1, nil
+}
+
+func ConvertUTCtoIST() (Loc *time.Location) {
+	Loc, _ = time.LoadLocation("Asia/Kolkata")
+	return Loc
 }

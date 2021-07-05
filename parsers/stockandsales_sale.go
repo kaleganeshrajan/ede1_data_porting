@@ -28,8 +28,9 @@ func initParser() {
 
 //StockandSalesCSVParser stock and sales with PTS and without PTS, Batch and Invoice details data parse
 func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
-	startTime := time.Now()
-	//log.Printf("Starting file parse: %v", g.FilePath)
+
+	startTime := time.Now().In(utils.ConvertUTCtoIST())
+	//log.Printf("Starting file parse: %v", g.FileName)
 	initParser()
 	var fd utils.FileDetail
 	var stockandsalesRecords md.Record
@@ -47,6 +48,10 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 		if err != nil && len(line) > 1000 {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
+			continue
+		}
+
+		if len(line) <= 2 && err == nil {
 			continue
 		}
 
@@ -119,13 +124,12 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			flag = 0
 
 		} else {
-			return errors.New("file is not correct format")
+			return errors.New("file is not correct format : " + line)
 		}
 
 		if err != nil && err == io.EOF {
 			break
 		}
-
 	}
 
 	assignHeaders(g, &stockandsalesRecords)
@@ -133,7 +137,7 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	for _, lineSlice := range itemMap {
 		SS_count = SS_count + 1
 
-		tempItem := assignItem(lineSlice, &stockandsalesRecords)
+		tempItem := assignItem(lineSlice, &stockandsalesRecords, g)
 		g.DistributorCode = stockandsalesRecords.DistributorCode
 
 		if _, ok := cMap[strings.TrimSpace(lineSlice.MANU_CODE)]; !ok {
@@ -154,17 +158,18 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 		}
 		testinter = stockandsalesRecords
 
-		err = utils.GenerateJsonFile(testinter, hd.Stock_and_Sales)
+		err = utils.InserttoBigquery(testinter, hd.Stock_and_Sales)
 
 		if err != nil {
 			return err
 		}
 
-		fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, 0,
-			0, int64(time.Since(startTime)/1000000), hd.File_details)
+		fd.FileDetails(g.FileName, stockandsalesRecords.DistributorCode, SS_count, 0,
+			0, int64(time.Since(startTime)/1000000), stockandsalesRecords.FromDate, stockandsalesRecords.ToDate,
+			hd.File_details)
 
 		g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
-		//log.Printf("File parsing done: %v", g.FilePath)
+		//log.Printf("File parsing done: %v", g.FileName)
 
 		g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 		//g.LogFileDetails(true)
@@ -176,37 +181,37 @@ func StockandSalesSale(g utils.GcsFile, reader *bufio.Reader) (err error) {
 }
 
 func assignHeaders(g utils.GcsFile, stockandsalesRecords *md.Record) {
-	stockandsalesRecords.FilePath = g.FilePath
-	if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V4 PATCH") {
+	//stockandsalesRecords.Key = g.FileKey
+	stockandsalesRecords.FilePath = g.FileName
+	if strings.Contains(strings.ToUpper(g.FileName), "STANDARD V4 PATCH") {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V4_Patch)
-	} else if strings.Contains(strings.ToUpper(g.FilePath), "STANDARD V5 PATCH") {
+	} else if strings.Contains(strings.ToUpper(g.FileName), "STANDARD V5 PATCH") {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_V5_Patch)
 	} else {
 		stockandsalesRecords.FileType = strconv.Itoa(hd.Standard_Excel_Format)
 	}
-
-	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
-	if strings.Contains(g.BucketName, "MTD") {
+	stockandsalesRecords.CreationDatetime = time.Now().In(utils.ConvertUTCtoIST()).Format("2006-01-02 15:04:05")
+	if strings.Contains(strings.ToUpper(g.BucketName), "MTD") {
 		stockandsalesRecords.Duration = hd.DurationMTD
 	} else {
 		stockandsalesRecords.Duration = hd.DurationMonthly
 	}
 }
 
-func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record) (tempItem md.Item) {
+func assignItem(lineSlice md.SaleDist, stockandsalesRecords *md.Record, g utils.GcsFile) (tempItem md.Item) {
 	var cm md.Common
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice.ACODE)
 
 	cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice.FROM_DATE))
 	if err != nil || cm.FromDate == nil {
-		log.Printf("stockandsales_sale From Date Error: %v : %v", err, lineSlice.FROM_DATE)
+		log.Printf("stockandsales_sale From Date Error: %v : %v : %v\n", err, lineSlice.FROM_DATE, g.FileName)
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, _ = utils.ConvertDate(strings.TrimSpace(lineSlice.TO_DATE))
 	if err != nil || cm.ToDate == nil {
-		log.Printf("stockandsales_sale To Date Error: %v : %v", err, lineSlice.TO_DATE)
+		log.Printf("stockandsales_sale To Date Error: %v : %v : %v\n", err, lineSlice.TO_DATE, g.FileName)
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}

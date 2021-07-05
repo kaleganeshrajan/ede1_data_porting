@@ -13,9 +13,14 @@ import (
 	"time"
 )
 
+var (
+	cm md.Common
+)
+
 func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
-	startTime := time.Now()
-	//log.Printf("Starting file parse: %v", g.FilePath)
+
+	startTime := time.Now().In(utils.ConvertUTCtoIST())
+	//log.Printf("Starting file parse: %v", g.FileName)
 
 	cMap := make(map[string]md.Company)
 
@@ -37,6 +42,10 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			continue
 		}
 
+		if len(line) <= 2 && err == nil {
+			continue
+		}
+
 		if len(line) <= 2 {
 			break
 		}
@@ -47,7 +56,7 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			seperator = "|"
 			lineSlice = strings.Split(line, seperator)
 			if len(lineSlice) <= 3 {
-				return errors.New("File format is wrong :- " + line)
+				return errors.New("File format is wrong : " + line)
 			}
 		}
 
@@ -58,7 +67,7 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 				if len(strings.TrimSpace(lineSlice[hd.Stockistcode])) > 1 {
 					SS_count = SS_count + 1
 
-					tempItem := assignStandardItem(lineSlice, &stockandsalesRecords)
+					tempItem := assignStandardItem(lineSlice, &stockandsalesRecords, g)
 					g.DistributorCode = stockandsalesRecords.DistributorCode
 
 					if _, ok := cMap[strings.TrimSpace(lineSlice[hd.Company_code])]; !ok {
@@ -71,16 +80,12 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 					cMap[strings.TrimSpace(lineSlice[hd.Company_code])] = t
 				}
 			} else {
-				return errors.New("file is not correct format")
+				return errors.New("file is not correct format : " + line)
 			}
 		}
-
-		
 		if err != nil && err == io.EOF {
 			break
 		}
-
-
 	}
 
 	var testinter interface{}
@@ -89,15 +94,16 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 			stockandsalesRecords.Companies = append(stockandsalesRecords.Companies, val)
 		}
 		testinter = stockandsalesRecords
-		err = utils.GenerateJsonFile(testinter, hd.Stock_and_Sales)
+		err = utils.InserttoBigquery(testinter, hd.Stock_and_Sales)
 		if err != nil {
 			return err
 		}
 
-		fd.FileDetails(g.FilePath, stockandsalesRecords.DistributorCode, SS_count, 0, 0, int64(time.Since(startTime)/1000000), hd.File_details)
+		fd.FileDetails(g.FileName, stockandsalesRecords.DistributorCode, SS_count, 0, 0, int64(time.Since(startTime)/1000000), 
+		stockandsalesRecords.FromDate,stockandsalesRecords.ToDate, hd.File_details)
 
 		g.GcsClient.MoveObject(g.FileName, g.FileName, "awacs-ede1-ported")
-		//log.Printf("File parsing done: %v", g.FilePath)
+		//log.Printf("File parsing done: %v", g.FileName)
 
 		g.TimeDiffrence = int64(time.Since(startTime) / 1000000)
 		//g.LogFileDetails(true)
@@ -108,20 +114,19 @@ func StockandSalesDetails(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	return nil
 }
 
-func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (tempItem md.Item) {
-	var cm md.Common
+func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record, g utils.GcsFile) (tempItem md.Item) {
 	var err error
 	stockandsalesRecords.DistributorCode = strings.TrimSpace(lineSlice[hd.Stockistcode])
-	stockandsalesRecords.CreationDatetime = time.Now().Format("2006-01-02 15:04:05")
+	stockandsalesRecords.CreationDatetime = time.Now().In(utils.ConvertUTCtoIST()).Format("2006-01-02 15:04:05")
 	cm.FromDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[hd.Fromdate]))
 	if err != nil || cm.FromDate == nil {
-		log.Printf("stockandsales_details From Date Error: %v : %v", err, lineSlice[hd.Fromdate])
+		log.Printf("stockandsales_details From Date Error: %v : %v : %v\n", err, lineSlice[hd.Fromdate], g.FileName)
 	} else {
 		stockandsalesRecords.FromDate = cm.FromDate.Format("2006-01-02")
 	}
 	cm.ToDate, err = utils.ConvertDate(strings.TrimSpace(lineSlice[hd.Todate]))
 	if err != nil || cm.ToDate == nil {
-		log.Printf("stockandsales_details To Date Error: %v : %v", err, lineSlice[hd.Todate])
+		log.Printf("stockandsales_details To Date Error: %v : %v : %v\n", err, lineSlice[hd.Todate], g.FileName)
 	} else {
 		stockandsalesRecords.ToDate = cm.ToDate.Format("2006-01-02")
 	}
@@ -132,7 +137,6 @@ func assignStandardItem(lineSlice []string, stockandsalesRecords *md.Record) (te
 	} else {
 		tempItem.SearchString = SearchString
 	}
-
 	tempItem.PTR, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.StandardPTR]), 64)
 	tempItem.OpeningStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.OpeingUnits]), 64)
 	tempItem.SalesQty, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.SalesUnits]), 64)

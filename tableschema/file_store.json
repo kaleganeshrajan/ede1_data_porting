@@ -1,0 +1,22 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "StoredDatetime",
+    "type": "DATETIME"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "BucketName",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Status",
+    "type": "STRING"
+  }
+]

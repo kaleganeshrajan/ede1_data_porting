@@ -1,0 +1,26 @@
+package main
+
+import (
+	"ede_porting/app"
+	"time"
+
+	cr "github.com/brkelkar/common_utils/configreader"
+)
+
+var (
+	cfg cr.Config
+)
+
+//BukectStruct parse data from pubsub
+type BukectStruct struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	Bucket  string    `json:"bucket"`
+	Updated time.Time `json:"updated"`
+	Size    string    `json:"size"`
+}
+
+func main() {
+	//log.Println("Starting ede1 porting service")
+	app.StartApplication(cfg)
+}

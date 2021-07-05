@@ -1,0 +1,206 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "FromDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ToDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DistributorCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FileType",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Duration",
+    "type": "STRING"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "CompanyName",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "CompanyCode",
+        "type": "STRING"
+      },
+      {
+        "fields": [
+          {
+            "mode": "NULLABLE",
+            "name": "ItemCode",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "SearchString",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "ItemName",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "Pack",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "UPC",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "PTR",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "PTS",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "MRP",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "OpeningStock",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "SalesQty",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "BonusQty",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "SalesReturn",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "ExpiryIn",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "DiscountPercentage",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "DiscountAmount",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "SaleTax",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "PurchasesReciept",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "PurchaseReturn",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "ExpiryOut",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "Adjustments",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "ClosingStock",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "UniformPdtCode",
+            "type": "STRING"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "InstaSales",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "OpenVal",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "PurchaseVal",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "SalesVal",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "CloseVal",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "PurchaseFree",
+            "type": "FLOAT"
+          },
+          {
+            "mode": "NULLABLE",
+            "name": "SalesFree",
+            "type": "FLOAT"
+          }
+        ],
+        "mode": "REPEATED",
+        "name": "Items",
+        "type": "RECORD"
+      }
+    ],
+    "mode": "REPEATED",
+    "name": "Companies",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CreationDatetime",
+    "type": "DATETIME"
+  }
+]

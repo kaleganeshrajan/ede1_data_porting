@@ -1,0 +1,78 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "DistributorCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ToDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FromDate",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FileType",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Duration",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FilePath",
+    "type": "STRING"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "ItemName",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "Pack",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "UPC",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "BatchNumber",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "ExpiryDate",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "ClosingQuantity",
+        "type": "FLOAT"
+      },
+      {
+        "name": "SearchString",
+        "type": "STRING"
+      }
+    ],
+    "mode": "REPEATED",
+    "name": "Batches",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CreationDatetime",
+    "type": "DATETIME"
+  }
+]

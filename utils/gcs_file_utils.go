@@ -26,6 +26,7 @@ type GcsFile struct {
 	Source          string
 	GcsClient       *GcsBucketClient
 	TimeDiffrence   int64
+	//FileKey         string
 }
 
 //HandleGCSEvent  parse file name and set all required attributes for the file
@@ -34,15 +35,16 @@ func (g *GcsFile) HandleGCSEvent(ctx context.Context, e models.GCSEvent) *GcsFil
 	g.GcsClient = gcsObj.InitClient(ctx).SetBucketName(e.Bucket).SetNewReader(e.Name)
 
 	if !g.GcsClient.GetLastStatus() {
-		log.Print("Error while reading file")
+		log.Println("Error while reading file")
 	}
 	g.FileSize, _ = strconv.Atoi(e.Size)
 	g.FilePath = e.Bucket + "/" + e.Name
 	g.FileName = e.Name
 	g.BucketName = e.Bucket
 	fileName := strings.Split(e.Name, "/")
+	//g.FileKey = fileName[len(fileName)-2]
 	g.LastUpdateTime = e.Updated
-	g.FileType = fileName[len(fileName)-5]
+	g.FileType = fileName[len(fileName)-6]
 	g.ProcessingTime = e.Updated.Format("2006-01-02")
 	return g
 }
