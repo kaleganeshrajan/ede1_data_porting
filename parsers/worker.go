@@ -60,7 +60,6 @@ func Worker(msg models.PubSubMessage) error {
 	// }
 
 	if strings.Contains(g.FileName, ".zip") {
-
 		files, err := Unzip(g, headers.ZipOutFile)
 		if err != nil {
 			log.Fatal(err)
