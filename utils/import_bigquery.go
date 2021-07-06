@@ -23,7 +23,7 @@ func InserttoBigquery(Rrecords interface{}, tableName string) (err error) {
 		log.Println(err)
 	}
 	
-	if b.Len() >1800000 {
+	if b.Len() >1100000 {
 		err = GenerateJsonFile(Rrecords, tableName)
 		if err != nil {
 			return err
