@@ -56,7 +56,7 @@ const (
 
 const (
 	ProjectID       string = "awacs-dev"
-	DatasetID       string = "test"
+	DatasetID       string = "ede_raw_data"
 	Filename        string = "D:/tmp/"
 	FileTypePTS     string = "With_PTS"
 	FileType        string = "Without_PTS"

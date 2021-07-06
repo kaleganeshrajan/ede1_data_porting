@@ -219,7 +219,7 @@ func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	tempItem.Adjustments, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Adjustments+PTSLength]), 64)
 	
 	tempItem.ClosingStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Closing_Stock+PTSLength]), 64)
-	log.Printf(" closing stock : %v : %v : %v",lineSlice[1],lineSlice[hd.Closing_Stock+PTSLength] ,tempItem.ClosingStock)
+	
 	if len(lineSlice) >= 29 {
 		PTSLength = 1
 		tempItem.InstaSales, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.InstaSales+PTSLength]), 64)
