@@ -35,8 +35,8 @@ func StockandSalesParser(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	newLine := byte('\n')
 	for {
 		line, err := reader.ReadString(newLine)
-		
-		if err != nil && len(line) > 1000 {
+
+		if len(line) > 30000 {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
 			continue
@@ -217,7 +217,9 @@ func assignItemH1(lineSlice []string) (tempItem md.Item) {
 	tempItem.PurchaseReturn, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Purchase_return+PTSLength]), 64)
 	tempItem.ExpiryOut, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Expiry_out+PTSLength]), 64)
 	tempItem.Adjustments, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Adjustments+PTSLength]), 64)
+	
 	tempItem.ClosingStock, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.Closing_Stock+PTSLength]), 64)
+	log.Printf(" closing stock : %v : %v : %v",lineSlice[1],lineSlice[hd.Closing_Stock+PTSLength] ,tempItem.ClosingStock)
 	if len(lineSlice) >= 29 {
 		PTSLength = 1
 		tempItem.InstaSales, _ = strconv.ParseFloat(strings.TrimSpace(lineSlice[hd.InstaSales+PTSLength]), 64)
@@ -248,7 +250,7 @@ func assignItemH2(lineSlice []string, g utils.GcsFile) (tempItem md.ItemBatch) {
 		tempItem.ExpiryDate = ExpiryDate.Format("2006-01-02")
 	}
 
-	tempItem.ClosingQuantity = strings.TrimSpace(strings.Replace(lineSlice[hd.H2_Closing_Stock], ",", "", -1))
+	tempItem.ClosingQuantity,_ =strconv.ParseFloat(strings.TrimSpace(strings.Replace(lineSlice[hd.H2_Closing_Stock], ",", "", -1)),64)
 	return tempItem
 }
 

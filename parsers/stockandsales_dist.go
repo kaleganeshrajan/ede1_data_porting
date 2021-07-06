@@ -27,11 +27,11 @@ func StockandSalesDits(g utils.GcsFile, reader *bufio.Reader) (err error) {
 	for {
 		line, err := reader.ReadString(newLine)
 
-		if err != nil && len(line) > 1000 {
+		if len(line) > 30000  {
 			reader = bufio.NewReader(strings.NewReader(line))
 			newLine = '\r'
 			continue
-		}
+		} 
 
 		if len(line) <= 2 && err == nil {
 			continue
